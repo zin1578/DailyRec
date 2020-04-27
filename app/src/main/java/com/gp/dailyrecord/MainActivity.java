@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    /* ##캘린더
+    /* ##캘린더////2222aaa
     public void onButtonDiaryClicked(View v){
         Intent intent = new Intent(getApplicationContext(), CalenderActivity.class);
         startActivityForResult(intent, REQUEST_CODE_MENU);
