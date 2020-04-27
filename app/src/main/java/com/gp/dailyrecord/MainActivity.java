@@ -159,8 +159,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    /* ##캘린더변경
-    public void onButtonDiaryClicked(View v){
+    /* ##캘린더변경마스터로보내기
+   public void onButtonDiaryClicked(View v){
         Intent intent = new Intent(getApplicationContext(), CalenderActivity.class);
         startActivityForResult(intent, REQUEST_CODE_MENU);
     }
