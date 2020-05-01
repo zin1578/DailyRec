@@ -6,80 +6,49 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteY="280dp">
 
-        <FrameLayout
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/vpPager"
             android:layout_width="match_parent"
-            android:layout_height="273dp">
+            android:layout_height="545dp" />
 
-            <fragment
-                android:id="@+id/map"
-                android:name="com.google.android.gms.maps.MapFragment"
-                android:layout_width="match_parent"
-                android:layout_height="278dp"></fragment>
-
-        </FrameLayout>
-
-        <FrameLayout
+        <Space
             android:layout_width="match_parent"
-            android:layout_height="451dp"
-            android:layout_gravity="bottom">
+            android:layout_height="29dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical">
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="당신은 무엇을 느끼고 있나요?" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="87dp" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="21dp" />
 
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="당신은 무엇을 느끼고 있나요?" />
+        <TextView
+            android:id="@+id/sttResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="63dp" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="15dp" />
 
-                <TextView
-                    android:id="@+id/sttResult"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+        <ImageButton
+            android:id="@+id/sttStart"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            app:srcCompat="@android:drawable/presence_audio_online" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="70dp" />
-
-                <Button
-                    android:id="@+id/sttStart"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal|center_vertical"
-                    android:text="Button" />
-
-                <me.relex.circleindicator.CircleIndicator
-                    android:id="@+id/indicator"
-                    app:ci_drawable="@drawable/black_radius"
-                    app:ci_height="7dp"
-                    app:ci_width="7dp"
-                    app:ci_margin="4dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"/>
-
-                <androidx.viewpager.widget.ViewPager
-                    android:id="@+id/vpPager"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-            </LinearLayout>
-
-        </FrameLayout>
-
-    </FrameLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
