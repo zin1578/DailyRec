@@ -16,21 +16,7 @@
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/vpPager"
             android:layout_width="match_parent"
-            android:layout_height="545dp" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="29dp" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="당신은 무엇을 느끼고 있나요?" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="21dp" />
+            android:layout_height="586dp" />
 
         <TextView
             android:id="@+id/sttResult"
