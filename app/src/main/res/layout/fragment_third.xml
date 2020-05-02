@@ -6,10 +6,11 @@
     android:layout_height="match_parent">
 
 
-    <EditText
-        android:id="@+id/editText"
+    <TextView
+        android:id="@+id/diaryText"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="EditText" />
+        android:layout_height="408dp"
+        android:layout_weight="1"
+        android:text="TextView" />
 
 </LinearLayout>

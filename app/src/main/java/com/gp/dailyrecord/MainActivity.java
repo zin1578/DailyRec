@@ -33,20 +33,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,9 +63,8 @@ public class MainActivity extends AppCompatActivity  {
 
 
     //adams 감정분석 관련 변수
-    String key ="342365250195746161";
+    String key ="4258457626421016575"; //4258457626421016575  //342365250195746161
     String str1; //음성인식 텍스트
-    double userLat, userLon; //사용자의 현재위치 위도 경도
     String data;
     String emotionJson;
     double scoreJson;
@@ -100,19 +85,11 @@ public class MainActivity extends AppCompatActivity  {
         adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
 
-
-/*
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_main);
-*/
-
         if (Build.VERSION.SDK_INT >= 23) {
             // 퍼미션 체크
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
                     Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
-
         sttBtn = (ImageButton) findViewById(R.id.sttStart);
         textView = (TextView)findViewById(R.id.sttResult);
         intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -124,7 +101,6 @@ public class MainActivity extends AppCompatActivity  {
             mRecognizer.startListening(intent);
         });
     }
-
 
     /* ##캘린더
     public void onButtonDiaryClicked(View v){
@@ -201,16 +177,14 @@ public class MainActivity extends AppCompatActivity  {
             ArrayList<String> matches =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-            for (int i = 0; i < matches.size(); i++) {
-                textView.setText(matches.get(i));
-            }
+
+
+                textView.setText(matches.get(0));
+
             str1 = (String) textView.getText();
-
-
 
             //감정분석
              {
-                //키워드 작동 안하면
                 Emot t0 = new Emot();
                 t0.start();
                 try {
@@ -292,10 +266,6 @@ public class MainActivity extends AppCompatActivity  {
         }
 
 
-
-
-
-
         @Override
         public void onPartialResults(Bundle partialResults) {
         }
@@ -306,11 +276,6 @@ public class MainActivity extends AppCompatActivity  {
     };
 
 
-
-
-
-
-
     String getXmlData( String str){
 
         //EditText에 작성된 Text얻어오기
@@ -318,7 +283,6 @@ public class MainActivity extends AppCompatActivity  {
 
         String queryUrl="http://api.adams.ai/datamixiApi/omAnalysis?" +
                 "&key=" + key + "&query=" + str + "&type=" +1;
-
 
         try {
             URL url= new URL(queryUrl);//문자열로 된 요청 url을 URL 객체로 생성.
