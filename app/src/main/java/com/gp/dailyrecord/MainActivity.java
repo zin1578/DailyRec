@@ -5,12 +5,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
-import android.net.Uri;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -23,8 +18,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -39,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -84,6 +78,7 @@ public class MainActivity extends AppCompatActivity  {
         ViewPager vpPager = (ViewPager) findViewById(R.id.vpPager);
         adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
+
 
         if (Build.VERSION.SDK_INT >= 23) {
             // 퍼미션 체크
@@ -185,19 +180,24 @@ public class MainActivity extends AppCompatActivity  {
 
             //감정분석
              {
-                Emot t0 = new Emot();
-                t0.start();
+             //   Emot t0 = new Emot(); 감정분석
+             //   t0.start();
+                 Senti t0 = new Senti();
+                 t0.start();
+
                 try {
                     t0.join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
+                /*
                 if (scoreJson < 0.8) {
                     Senti t1 = new Senti();
                     t1.start();
                 }
-                if (scoreJson >= 0.8) {
+
+                 */
+                if (true) {
                     if (emotionJson.equals("부정")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
@@ -406,11 +406,13 @@ public class MainActivity extends AppCompatActivity  {
             Date currentTime = Calendar.getInstance().getTime();
             String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
             //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
-            FileOutputStream fos=openFileOutput(date_text+""+".txt", Context.MODE_APPEND);
+            String fileName =  date_text+""+".txt";
+            FileOutputStream fos=openFileOutput(fileName, Context.MODE_APPEND);
             long now = System.currentTimeMillis(); // 현재시간 받아오기
             Date date = new Date(now); // Date 객체 생성
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
             String nowTime = sdf.format(date);
+
             PrintWriter writer= new PrintWriter(fos);
             writer.append(nowTime + " ");
             // writer.println(nowTime+ " ");
@@ -418,39 +420,13 @@ public class MainActivity extends AppCompatActivity  {
             writer.append(text);
             writer.append("\n");
             writer.close();
-        } catch (FileNotFoundException e) {
+
+
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        /*
-        /////////////////////// 파일 쓰기 ///////////////////////
-        String emotion = curEmo;
-        String str = text;
-        // 파일 생성
-        File saveFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/camdata"); // 저장 경로
-        // 폴더 생성
-        if(!saveFile.exists()){ // 폴더 없을 경우
-            saveFile.mkdir(); // 폴더 생성
-        }
-        try {
-            long now = System.currentTimeMillis(); // 현재시간 받아오기
-            Date date = new Date(now); // Date 객체 생성
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String nowTime = sdf.format(date);
 
-            BufferedWriter buf = new BufferedWriter(new FileWriter(saveFile+"/CarnumData.txt", true));
-            buf.append(nowTime + " "); // 날짜 쓰기
-            buf.append(emotion + " ");//감정 쓰기
-            buf.append(str); // 일기 쓰기
-            buf.newLine(); // 개행
-            buf.close();
-        } catch (
-                FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-*/
     }
 
 
