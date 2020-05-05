@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".CalenderActivity">
+   >
 
     <!--
     datePicker - 날짜를 선택하는 달력
@@ -21,6 +21,29 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnSave"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:background="@android:drawable/ic_menu_edit" />
+
+            <Button
+                android:id="@+id/datePick"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="49dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@android:drawable/ic_menu_my_calendar" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
@@ -31,10 +54,16 @@
 
 
         <TextView
+            android:id="@+id/naviInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="save   datepick" />
+
+        <TextView
             android:id="@+id/viewDatePick"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#DDDDDD"
+            android:background="@android:color/transparent"
             android:gravity="center"
             android:text=""
             android:textStyle="bold" />
@@ -42,39 +71,13 @@
         <EditText
             android:id="@+id/edtDiary"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#DDDDDD"
+            android:layout_height="395dp"
+            android:background="@android:color/transparent"
             android:ems="10"
-            android:gravity="start|center_vertical"
+            android:gravity="start|top|center_vertical"
             android:inputType="text|textMultiLine|textCapSentences"
             android:padding="7sp"
             android:text="" />
-
-        <DatePicker
-            android:id="@+id/datePicker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="15sp" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <Button
-                android:id="@+id/btnSave"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="55dp"
-                android:layout_height="33dp"
-                android:background="@android:drawable/ic_menu_edit"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.49"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.075" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 

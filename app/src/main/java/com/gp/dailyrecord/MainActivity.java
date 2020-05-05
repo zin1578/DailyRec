@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity  {
         ViewPager vpPager = (ViewPager) findViewById(R.id.vpPager);
         adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
-
+        vpPager.setCurrentItem(1, true);//처음화면을 프레그먼트 2로 (홈화면)
 
         if (Build.VERSION.SDK_INT >= 23) {
             // 퍼미션 체크
@@ -415,12 +416,10 @@ public class MainActivity extends AppCompatActivity  {
 
             PrintWriter writer= new PrintWriter(fos);
             writer.append(nowTime + " ");
-            // writer.println(nowTime+ " ");
             writer.append(curEmo+ " ");
             writer.append(text);
             writer.append("\n");
             writer.close();
-
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -431,9 +430,9 @@ public class MainActivity extends AppCompatActivity  {
 
 
 
-    //혜빈수정
-   FragmentPagerAdapter adapterViewPager;
-    public static class MyPagerAdapter extends FragmentPagerAdapter {
+    //혜빈수정 //2020-05-05 주현 FragmentPagerAdapter를 FragmentStatePagerAdapter로 수정(화면갱신때문에)
+   MyPagerAdapter adapterViewPager;
+    public static class MyPagerAdapter extends FragmentStatePagerAdapter {
         private static int NUM_ITEMS = 3;
 
         public MyPagerAdapter(FragmentManager fragmentManager) {
@@ -446,20 +445,23 @@ public class MainActivity extends AppCompatActivity  {
             return NUM_ITEMS;
         }
 
+
         // Returns the fragment to display for that page
         @Override
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return com.gp.dailyrecord.FirstFragment.newInstance(0, "Page # 1");
+                    return com.gp.dailyrecord.FirstFragment.newInstance(0, "Page # 1");//맵뷰
                 case 1:
-                    return com.gp.dailyrecord.SecondFragment.newInstance(1, "Page # 2");
+                    return com.gp.dailyrecord.SecondFragment.newInstance(1, "Page # 2"); //홈
                 case 2:
-                    return com.gp.dailyrecord.ThirdFragment.newInstance(2, "Page # 3");
+                    return com.gp.dailyrecord.ThirdFragment.newInstance(2, "Page # 3");//다이어리
                 default:
                     return null;
             }
         }
+
+
 
         // Returns the page title for the top indicator
         @Override
