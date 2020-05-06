@@ -52,17 +52,14 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity  {
 
-
-
     private AppCompatActivity mActivity;
-
-
     //adams 감정분석 관련 변수
     String key ="4258457626421016575"; //4258457626421016575  //342365250195746161
     String str1; //음성인식 텍스트
     String data;
     String emotionJson;
     double scoreJson;
+    int badCount, normalCount, goodCount;
 
     Intent intent;
     SpeechRecognizer mRecognizer;
@@ -129,42 +126,7 @@ public class MainActivity extends AppCompatActivity  {
 
         @Override
         public void onError(int error) {
-            String message;
 
-            switch (error) {
-                case SpeechRecognizer.ERROR_AUDIO:
-                    message = "오디오 에러";
-                    break;
-                case SpeechRecognizer.ERROR_CLIENT:
-                    message = "클라이언트 에러";
-                    break;
-                case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                    message = "퍼미션 없음";
-                    break;
-                case SpeechRecognizer.ERROR_NETWORK:
-                    message = "네트워크 에러";
-                    break;
-                case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                    message = "네트웍 타임아웃";
-                    break;
-                case SpeechRecognizer.ERROR_NO_MATCH:
-                    message = "찾을 수 없음";
-                    break;
-                case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                    message = "RECOGNIZER가 바쁨";
-                    break;
-                case SpeechRecognizer.ERROR_SERVER:
-                    message = "서버가 이상함";
-                    break;
-                case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                    message = "말하는 시간초과";
-                    break;
-                default:
-                    message = "알 수 없는 오류임";
-                    break;
-            }
-
-            Toast.makeText(getApplicationContext(), "에러가 발생하였습니다. : " + message, Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -196,70 +158,38 @@ public class MainActivity extends AppCompatActivity  {
                     Senti t1 = new Senti();
                     t1.start();
                 }
-
                  */
+                 //##감정 나쁨 보통 좋음 3가지로 수정
+                if(emotionJson.equals("부정")||emotionJson.equals("공포")||emotionJson.equals("슬픔")
+                    ||emotionJson.equals("혐오")||emotionJson.equals("분노")){
+                    badCount++;
+                    emotionJson = "나쁨";
+                }else if(emotionJson.equals("중립")||emotionJson.equals("신뢰")||emotionJson.equals("기대")
+                ||emotionJson.equals("놀라움")){
+                    normalCount++;
+                    emotionJson = "보통";
+                }else if(emotionJson.equals("긍정")||emotionJson.equals("기쁨")){
+                    goodCount++;
+                    emotionJson = "좋음";
+                }else if(true){ //아무것도 잡히지 않았을 때 보통으로
+                    normalCount++;
+                    emotionJson = "보통";
+                }
                 if (true) {
-                    if (emotionJson.equals("부정")) {                  //감성 종류 : [부정, 중립, 긍정]
+                    if (emotionJson.equals("나쁨")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/감정: 나쁨 /", str1);
+                        WriteFile("/ 감정: 나쁨 /", str1);
 
-                    } else if (emotionJson.equals("중립")) {                  //감성 종류 : [부정, 중립, 긍정]
+                    } else if (emotionJson.equals("보통")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
                         WriteFile("/ 감정: 보통 /", str1);
 
-                    } else if (emotionJson.equals("긍정")) {                  //감성 종류 : [부정, 중립, 긍정]
+                    } else if (emotionJson.equals("좋음")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
                         WriteFile("/ 감정: 좋음 /", str1);
-
-                    } else if (emotionJson.equals("기쁨")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 행복 /", str1);
-
-                    } else if (emotionJson.equals("신뢰")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 신뢰 /", str1);
-
-                    } else if (emotionJson.equals("공포")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 공포 /", str1);
-
-                    } else if (emotionJson.equals("기대")) {
-                        if (str1.contains("싶어") || str1.contains("싶다") || str1.contains("싶") || str1.contains("할래") || str1.contains("갈래") || str1.contains("거야")) {
-
-                            WriteFile("/ 일상: 의지/", str1);
-                        } else {
-                            //감성 종류 : [부정, 중립, 긍정]
-                            // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                            WriteFile("/ 감정: 기대 /", str1);
-                        }
-                    } else if (emotionJson.equals("놀라움")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 놀라움 /", str1);
-
-                    } else if (emotionJson.equals("슬픔")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 슬픔 /", str1);
-
-                    } else if (emotionJson.equals("혐오")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 혐오 /", str1);
-
-                    } else if (emotionJson.equals("분노")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 화남 /", str1);
-
-                    } else { //모두 아닌경우
 
                     }
                 }
