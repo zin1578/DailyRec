@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity  {
     SpeechRecognizer mRecognizer;
     ImageButton sttBtn;
     TextView textView;
-
+//git config --global --add url."https://github.com/".insteadOf "git@github.com:"
     final int PERMISSION = 1;
 
     @Override
