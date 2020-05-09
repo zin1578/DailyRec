@@ -1,13 +1,21 @@
 package com.gp.dailyrecord;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Message;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -18,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -28,11 +37,24 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -46,28 +68,45 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.poi.*;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
 
     private AppCompatActivity mActivity;
     //adams 감정분석 관련 변수
-    String key ="4258457626421016575"; //4258457626421016575  //342365250195746161
+    String key = "4258457626421016575"; //4258457626421016575  //342365250195746161
     String str1; //음성인식 텍스트
     String data;
     String emotionJson;
     double scoreJson;
     int badCount, normalCount, goodCount;
 
+
+    // 위치 변수
+
+    Intent intentThatCalled;
+    public double latitude;
+    public double longitude;
+    public LocationManager locationManager;
+    public Criteria criteria;
+    public String bestProvider;
+
     Intent intent;
     SpeechRecognizer mRecognizer;
     ImageButton sttBtn;
     TextView textView;
-//git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+    //git config --global --add url."https://github.com/".insteadOf "git@github.com:"
     final int PERMISSION = 1;
 
+    //엑셀 관련 변수
+    HSSFSheet sheet;
+    Workbook workbook;
+    Row row;
+    Cell c;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +123,7 @@ public class MainActivity extends AppCompatActivity  {
                     Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
         sttBtn = (ImageButton) findViewById(R.id.sttStart);
-        textView = (TextView)findViewById(R.id.sttResult);
+        textView = (TextView) findViewById(R.id.sttResult);
         intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
@@ -99,6 +138,123 @@ public class MainActivity extends AppCompatActivity  {
     public void onButtonDiaryClicked(View v){
         Intent intent = new Intent(getApplicationContext(), CalenderActivity.class);
         startActivityForResult(intent, REQUEST_CODE_MENU);
+    }
+*//*
+    private Location lastKnownLocation = null;
+
+
+    public static boolean isLocationEnabled(Context context) {
+
+        //...............
+        return true;
+    }
+
+  */
+
+    private final LocationListener locationListener = new LocationListener() {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            // A new location update is received.  Do something useful with it.  In this case,
+            // we're sending the update to a handler which then updates the UI with the new
+            // location.
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+    private static final int TWO_MINUTES = 1000 * 60 * 2;
+
+    /** Determines whether one Location reading is better than the current Location fix
+     * @param location  The new Location that you want to evaluate
+     * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+     */
+    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+        if (currentBestLocation == null) {
+            // A new location is always better than no location
+            return true;
+        }
+
+        // Check whether the new location fix is newer or older
+        long timeDelta = location.getTime() - currentBestLocation.getTime();
+        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
+        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+        boolean isNewer = timeDelta > 0;
+
+        // If it's been more than two minutes since the current location, use the new location
+        // because the user has likely moved
+        if (isSignificantlyNewer) {
+            return true;
+            // If the new location is more than two minutes older, it must be worse
+        } else if (isSignificantlyOlder) {
+            return false;
+        }
+
+        // Check whether the new location fix is more or less accurate
+        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+        boolean isLessAccurate = accuracyDelta > 0;
+        boolean isMoreAccurate = accuracyDelta < 0;
+        boolean isSignificantlyLessAccurate = accuracyDelta > 200;
+
+        // Check if the old and new location are from the same provider
+        boolean isFromSameProvider = isSameProvider(location.getProvider(),
+                currentBestLocation.getProvider());
+
+        // Determine location quality using a combination of timeliness and accuracy
+        if (isMoreAccurate) {
+            return true;
+        } else if (isNewer && !isLessAccurate) {
+            return true;
+        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Checks whether two providers are the same */
+    private boolean isSameProvider(String provider1, String provider2) {
+        if (provider1 == null) {
+            return provider2 == null;
+        }
+        return provider1.equals(provider2);
+    }
+/*
+    @SuppressLint("MissingPermission")
+    protected void getLocation() {
+        if (isLocationEnabled(MainActivity.this)) {
+            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            LocationProvider provider =
+                    locationManager.getProvider(LocationManager.GPS_PROVIDER);
+            // Retrieve a list of location providers that have fine accuracy, no monetary cost, etc
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setCostAllowed(false);
+
+            String providerName = locationManager.getBestProvider(criteria, true);
+
+// If no suitable provider is found, null is returned.
+            if (providerName != null) {
+
+            }
+        }
+
+
     }
 */
 
@@ -129,15 +285,19 @@ public class MainActivity extends AppCompatActivity  {
 
         }
 
+
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         public void onResults(Bundle results) { //음성인식 후 감정분석
             // 말을 하면 ArrayList에 단어를 넣고 textView에 단어를 이어줍니다.
             ArrayList<String> matches =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-
-
                 textView.setText(matches.get(0));
+
+                //위치
+
+
 
             str1 = (String) textView.getText();
 
@@ -192,8 +352,10 @@ public class MainActivity extends AppCompatActivity  {
                         WriteFile("/ 감정: 좋음 /", str1);
 
                     }
-                }
-            }
+                } //감정분석 끝
+                WriteExcelFile();
+
+             }
         }
 
 
@@ -341,7 +503,7 @@ public class MainActivity extends AppCompatActivity  {
             FileOutputStream fos=openFileOutput(fileName, Context.MODE_APPEND);
             long now = System.currentTimeMillis(); // 현재시간 받아오기
             Date date = new Date(now); // Date 객체 생성
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
             String nowTime = sdf.format(date);
 
             PrintWriter writer= new PrintWriter(fos);
@@ -356,6 +518,151 @@ public class MainActivity extends AppCompatActivity  {
             e.printStackTrace();
         }
 
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    void WriteExcelFile(){
+        //excel file
+        Date currentTime = Calendar.getInstance().getTime();
+        String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
+        //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
+        String fileName =  date_text+""+".xls";
+
+        long now = System.currentTimeMillis(); // 현재시간 받아오기
+        Date date = new Date(now); // Date 객체 생성
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String nowTime = sdf.format(date); //시간 스트링
+
+
+      //  HSSFWorkbook writer = new HSSFWorkbook();
+        String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/"+fileName;
+        String fileChk = filePath;
+
+        java.io.File excelFile = new java.io.File(filePath);
+        try {
+            FileInputStream inputStream = new FileInputStream(filePath);
+            workbook = new HSSFWorkbook(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        File file = new File(fileChk);
+        if(file.exists()!=true) {
+
+            row = sheet.createRow(0);
+
+            c = row.createCell(0);
+            c.setCellValue("시간");
+
+            c = row.createCell(1);
+            c.setCellValue("감정");
+
+            c = row.createCell(2);
+            c.setCellValue("내용");
+
+            c = row.createCell(3);
+            c.setCellValue("위도");
+
+            c = row.createCell(4);
+            c.setCellValue("경도");
+
+            //내용 입력
+          //  sheet = (HSSFSheet) workbook.getSheetAt(0);
+            int rowsNum = sheet.getLastRowNum();
+            row = sheet.createRow(++rowsNum); //다음번 로우
+            //    Log.isLoggable("row", mLastRowNum);
+            c = row.createCell(0); //시간
+            c.setCellValue(nowTime);
+
+            c = row.createCell(1); //내용
+            c.setCellValue(str1);
+
+            c = row.createCell(2); //감정
+            c.setCellValue(emotionJson);
+
+            c = row.createCell(3); //위도
+            c.setCellValue(latitude);
+
+            c = row.createCell(4); //경도
+            c.setCellValue(longitude);
+
+            //파일계속 null이라 막무가내로 파일 경로 만들기...
+
+            //  File excelFile = new File(fileName);
+            try {
+                FileOutputStream os = new FileOutputStream(excelFile);
+                workbook.write(os);
+                workbook.close();
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+
+        }
+
+        //내용 입력
+        sheet = (HSSFSheet) workbook.getSheetAt(0);
+        int rowsNum = sheet.getLastRowNum();
+
+        row = sheet.createRow(++rowsNum); //다음번 로우
+    //    Log.isLoggable("row", mLastRowNum);
+        c = row.createCell(0); //시간
+        c.setCellValue(nowTime);
+
+        c = row.createCell(1); //내용
+        c.setCellValue(str1);
+
+        c = row.createCell(2); //감정
+        c.setCellValue(emotionJson);
+
+        c = row.createCell(3); //위도
+        c.setCellValue(latitude);
+
+        c = row.createCell(4); //경도
+        c.setCellValue(longitude);
+
+        //파일계속 null이라 막무가내로 파일 경로 만들기...
+
+      //  File excelFile = new File(fileName);
+        try {
+        FileOutputStream os = new FileOutputStream(excelFile);
+        workbook.write(os);
+        workbook.close();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+ /*
+       //////read Excel TEST
+       // String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/"+fileName;
+      //  java.io.File excelFile = new java.io.File(filePath);
+        try {
+            FileInputStream myInput = new FileInputStream(excelFile);
+            POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
+            HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
+            if (writer.getNumberOfSheets() != 0) {
+                sheet = writer.getSheetAt(0);
+                //We now need something to iterate through the cells.
+                Iterator rowIter = sheet.rowIterator();
+
+                while (rowIter.hasNext()) {
+                    HSSFRow myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                    Iterator cellIter = myRow.cellIterator();
+                    Log.isLoggable("row", myRow.getRowNum());
+                    while (cellIter.hasNext()) {
+                        HSSFCell myCell = (HSSFCell) cellIter.next();
+                        Log.e("Cell", myCell.toString());
+                    }
+                }
+            }
+
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+*/
     }
 
 
@@ -400,6 +707,8 @@ public class MainActivity extends AppCompatActivity  {
         }
 
     }
+
+
 }
 
 
