@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
     public Criteria criteria;
     public String bestProvider;
 
+
     Intent intent;
     SpeechRecognizer mRecognizer;
     ImageButton sttBtn;
@@ -122,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
                     Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         sttBtn = (ImageButton) findViewById(R.id.sttStart);
         textView = (TextView) findViewById(R.id.sttResult);
         intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -131,132 +133,52 @@ public class MainActivity extends AppCompatActivity {
             mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
             mRecognizer.setRecognitionListener(listener);
             mRecognizer.startListening(intent);
+            if ( Build.VERSION.SDK_INT >= 23 &&
+                    ContextCompat.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+                ActivityCompat.requestPermissions( MainActivity.this, new String[] {  android.Manifest.permission.ACCESS_FINE_LOCATION  },
+                        0 );
+            }
+            else{
+                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                String provider = location.getProvider();
+                longitude = location.getLongitude();
+                latitude = location.getLatitude();
+            //    double alt = location.getAltitude();
+
+                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        1000,
+                        1,
+                        gpsLocationListener);
+                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                        1000,
+                        1,
+                        gpsLocationListener);
+            }
         });
     }
 
-    /* ##캘린더
-    public void onButtonDiaryClicked(View v){
-        Intent intent = new Intent(getApplicationContext(), CalenderActivity.class);
-        startActivityForResult(intent, REQUEST_CODE_MENU);
-    }
-*//*
-    private Location lastKnownLocation = null;
 
-
-    public static boolean isLocationEnabled(Context context) {
-
-        //...............
-        return true;
-    }
-
-  */
-
-    private final LocationListener locationListener = new LocationListener() {
-
-        @Override
+    final LocationListener gpsLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
-            // A new location update is received.  Do something useful with it.  In this case,
-            // we're sending the update to a handler which then updates the UI with the new
-            // location.
-            latitude = location.getLatitude();
+
+            String provider = location.getProvider();
             longitude = location.getLongitude();
-
+            latitude = location.getLatitude();
+          //  double altitude = location.getAltitude();
 
         }
 
-        @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-
         }
 
-        @Override
         public void onProviderEnabled(String provider) {
-
         }
 
-        @Override
         public void onProviderDisabled(String provider) {
-
         }
     };
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
-
-    /** Determines whether one Location reading is better than the current Location fix
-     * @param location  The new Location that you want to evaluate
-     * @param currentBestLocation  The current Location fix, to which you want to compare the new one
-     */
-    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
-        if (currentBestLocation == null) {
-            // A new location is always better than no location
-            return true;
-        }
-
-        // Check whether the new location fix is newer or older
-        long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
-        boolean isNewer = timeDelta > 0;
-
-        // If it's been more than two minutes since the current location, use the new location
-        // because the user has likely moved
-        if (isSignificantlyNewer) {
-            return true;
-            // If the new location is more than two minutes older, it must be worse
-        } else if (isSignificantlyOlder) {
-            return false;
-        }
-
-        // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = accuracyDelta > 0;
-        boolean isMoreAccurate = accuracyDelta < 0;
-        boolean isSignificantlyLessAccurate = accuracyDelta > 200;
-
-        // Check if the old and new location are from the same provider
-        boolean isFromSameProvider = isSameProvider(location.getProvider(),
-                currentBestLocation.getProvider());
-
-        // Determine location quality using a combination of timeliness and accuracy
-        if (isMoreAccurate) {
-            return true;
-        } else if (isNewer && !isLessAccurate) {
-            return true;
-        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
-            return true;
-        }
-        return false;
-    }
-
-    /** Checks whether two providers are the same */
-    private boolean isSameProvider(String provider1, String provider2) {
-        if (provider1 == null) {
-            return provider2 == null;
-        }
-        return provider1.equals(provider2);
-    }
-/*
-    @SuppressLint("MissingPermission")
-    protected void getLocation() {
-        if (isLocationEnabled(MainActivity.this)) {
-            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            LocationProvider provider =
-                    locationManager.getProvider(LocationManager.GPS_PROVIDER);
-            // Retrieve a list of location providers that have fine accuracy, no monetary cost, etc
-            Criteria criteria = new Criteria();
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            criteria.setCostAllowed(false);
-
-            String providerName = locationManager.getBestProvider(criteria, true);
-
-// If no suitable provider is found, null is returned.
-            if (providerName != null) {
-
-            }
-        }
 
 
-    }
-*/
 
     private RecognitionListener listener = new RecognitionListener() {
         @Override
@@ -353,7 +275,11 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 } //감정분석 끝
-                WriteExcelFile();
+                 try {
+                     WriteExcelFile();
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                 }
 
              }
         }
@@ -522,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    void WriteExcelFile(){
+    void WriteExcelFile() throws IOException {
         //excel file
         Date currentTime = Calendar.getInstance().getTime();
         String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
@@ -540,18 +466,57 @@ public class MainActivity extends AppCompatActivity {
         String fileChk = filePath;
 
         java.io.File excelFile = new java.io.File(filePath);
-        try {
-            FileInputStream inputStream = new FileInputStream(filePath);
-            workbook = new HSSFWorkbook(inputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
+      /*  if(excelFile.delete()){
+            Log.i("File Delete Success", excelFile.getName());
+        }else{
+            Log.i("File Delete Failed", excelFile.getName());
         }
-
-
+*/
         File file = new File(fileChk);
-        if(file.exists()!=true) {
+        if(file.exists()) { //파일 존재하면 불러오기
+            try {
+                FileInputStream inputStream = new FileInputStream(filePath);
+                workbook = new HSSFWorkbook(inputStream);
+                //내용 입력
+                sheet = (HSSFSheet) workbook.getSheetAt(0);
+                int rowsNum = sheet.getLastRowNum();
 
-            row = sheet.createRow(0);
+                row = sheet.createRow(++rowsNum); //다음번 로우
+                //    Log.isLoggable("row", mLastRowNum);
+                c = row.createCell(0); //시간
+                c.setCellValue(nowTime);
+
+                c = row.createCell(1); //내용
+                c.setCellValue(str1);
+
+                c = row.createCell(2); //감정
+                c.setCellValue(emotionJson);
+
+                c = row.createCell(3); //위도
+                c.setCellValue(latitude);
+
+                c = row.createCell(4); //경도
+                c.setCellValue(longitude);
+
+                //파일계속 null이라 막무가내로 파일 경로 만들기...
+
+                //  File excelFile = new File(fileName);
+                try {
+                    FileOutputStream os = new FileOutputStream(excelFile);
+                    workbook.write(os);
+                    workbook.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{ //파일 존재하지 않을 경우
+          //  FileInputStream inputStream = new FileInputStream(file);
+            workbook = new HSSFWorkbook();
+            sheet = (HSSFSheet) workbook.createSheet();
+            row = sheet.createRow(1);
 
             c = row.createCell(0);
             c.setCellValue("시간");
@@ -601,39 +566,41 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+         /*   //내용 입력
+            sheet = (HSSFSheet) workbook.getSheetAt(0);
+            int rowsNum = sheet.getLastRowNum();
 
-        //내용 입력
-        sheet = (HSSFSheet) workbook.getSheetAt(0);
-        int rowsNum = sheet.getLastRowNum();
+            row = sheet.createRow(++rowsNum); //다음번 로우
+            //    Log.isLoggable("row", mLastRowNum);
+            c = row.createCell(0); //시간
+            c.setCellValue(nowTime);
 
-        row = sheet.createRow(++rowsNum); //다음번 로우
-    //    Log.isLoggable("row", mLastRowNum);
-        c = row.createCell(0); //시간
-        c.setCellValue(nowTime);
+            c = row.createCell(1); //내용
+            c.setCellValue(str1);
 
-        c = row.createCell(1); //내용
-        c.setCellValue(str1);
+            c = row.createCell(2); //감정
+            c.setCellValue(emotionJson);
 
-        c = row.createCell(2); //감정
-        c.setCellValue(emotionJson);
+            c = row.createCell(3); //위도
+            c.setCellValue(latitude);
 
-        c = row.createCell(3); //위도
-        c.setCellValue(latitude);
+            c = row.createCell(4); //경도
+            c.setCellValue(longitude);
 
-        c = row.createCell(4); //경도
-        c.setCellValue(longitude);
+            //파일계속 null이라 막무가내로 파일 경로 만들기...
 
-        //파일계속 null이라 막무가내로 파일 경로 만들기...
+            //  File excelFile = new File(fileName);
+            try {
+                FileOutputStream os = new FileOutputStream(excelFile);
+                workbook.write(os);
+                workbook.close();
 
-      //  File excelFile = new File(fileName);
-        try {
-        FileOutputStream os = new FileOutputStream(excelFile);
-        workbook.write(os);
-        workbook.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+          */
+
  /*
        //////read Excel TEST
        // String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/"+fileName;

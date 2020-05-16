@@ -109,10 +109,10 @@ public class FirstFragment extends Fragment {
                 sheet = writer.getSheetAt(0);
                 /** We now need something to iterate through the cells. **/
                 Iterator rowIter = sheet.rowIterator();
-
+                HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
                 int counter = 0; //엑셀 셀 카운터
                 while (rowIter.hasNext()) {
-                    HSSFRow myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                    myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
                     Iterator cellIter = myRow.cellIterator();
                     Log.isLoggable("row", myRow.getRowNum());
                     while (cellIter.hasNext()) {
