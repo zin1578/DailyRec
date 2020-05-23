@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -36,6 +37,11 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -85,9 +91,12 @@ public class MainActivity extends AppCompatActivity {
     double scoreJson;
     int badCount, normalCount, goodCount;
 
+    //음성인식 중복 방지..
+    boolean twice=false;
+
 
     // 위치 변수
-
+    LocationManager mLocationManager;
     Intent intentThatCalled;
     public double latitude;
     public double longitude;
@@ -108,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
     Workbook workbook;
     Row row;
     Cell c;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,39 +143,139 @@ public class MainActivity extends AppCompatActivity {
             mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
             mRecognizer.setRecognitionListener(listener);
             mRecognizer.startListening(intent);
-            if ( Build.VERSION.SDK_INT >= 23 &&
-                    ContextCompat.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
-                ActivityCompat.requestPermissions( MainActivity.this, new String[] {  android.Manifest.permission.ACCESS_FINE_LOCATION  },
-                        0 );
-            }
-            else{
-                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                String provider = location.getProvider();
-                longitude = location.getLongitude();
-                latitude = location.getLatitude();
-            //    double alt = location.getAltitude();
-
-                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                        1000,
-                        1,
-                        gpsLocationListener);
-                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                        1000,
-                        1,
-                        gpsLocationListener);
-            }
         });
     }
 
+    private void registerLocationUpdates() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
+        }
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+
+                1000, 1, mLocationListener);
+
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+
+                1000, 1, mLocationListener);
+
+//1000은 1초마다, 1은 1미터마다 해당 값을 갱신한다는 뜻으로, 딜레이마다 호출하기도 하지만
+
+//위치값을 판별하여 일정 미터단위 움직임이 발생 했을 때에도 리스너를 호출 할 수 있다.
+
+    }
+
+
+
+
+
+    private final LocationListener mLocationListener = new LocationListener() {
+
+        public void onLocationChanged(Location location) {
+//여기서 위치값이 갱신되면 이벤트가 발생한다.
+//값은 Location 형태로 리턴되며 좌표 출력 방법은 다음과 같다.
+
+            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+//Gps 위치제공자에 의한 위치변화. 오차범위가 좁다.
+                longitude = location.getLongitude();    //경도
+                latitude = location.getLatitude();         //위도
+                float accuracy = location.getAccuracy();        //신뢰도
+
+            }
+
+            else {
+//Network 위치제공자에 의한 위치변화
+//Network 위치는 Gps에 비해 정확도가 많이 떨어진다.
+            }
+
+        }
+
+        public void onProviderDisabled(String provider) {
+
+        }
+
+
+
+        public void onProviderEnabled(String provider) {
+
+        }
+
+
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+      //  출처: https://biig.tistory.com/74 [덩치의 안드로이드 스터디]
+    };
+
+
+    private Location getLastKnownLocation() {
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    Activity#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for Activity#requestPermissions for more details.
+
+                }
+            }
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
+    }
+
+    private void getLastLocationNewMethod(){
+        FusedLocationProviderClient mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // GPS location can be null if GPS is switched off
+                        if (location != null) {
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("MapDemoActivity", "Error trying to get last GPS location");
+                        e.printStackTrace();
+                    }
+                });
+    }
 
     final LocationListener gpsLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
-
             String provider = location.getProvider();
             longitude = location.getLongitude();
             latitude = location.getLatitude();
           //  double altitude = location.getAltitude();
-
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -177,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
         public void onProviderDisabled(String provider) {
         }
     };
-
 
 
     private RecognitionListener listener = new RecognitionListener() {
@@ -217,9 +326,28 @@ public class MainActivity extends AppCompatActivity {
 
                 textView.setText(matches.get(0));
 
+                //중복방지
+            if(twice == false){
+                twice = true;
+            }else {
+                twice = false;
+                return;
+            }
                 //위치
 
+            if (Build.VERSION.SDK_INT >= 23 &&
+                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        0);
+            } else {
+                mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                registerLocationUpdates();
+                getLastLocationNewMethod();
+                latitude = getLastKnownLocation().getLatitude();
+                longitude = getLastKnownLocation().getLongitude();
+                mLocationManager.removeUpdates(mLocationListener);
 
+            }
 
             str1 = (String) textView.getText();
 
@@ -277,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
                 } //감정분석 끝
                  try {
                      WriteExcelFile();
+                     return;
                  } catch (IOException e) {
                      e.printStackTrace();
                  }

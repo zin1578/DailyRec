@@ -36,6 +36,7 @@ public class FirstFragment extends Fragment {
     private int page;
     HSSFSheet sheet;
     double lat, lon;
+    MapView mapView;
     // newInstance constructor for creating fragment with arguments
     public static FirstFragment newInstance(int page, String title) {
         FirstFragment fragment = new FirstFragment();
@@ -63,9 +64,14 @@ public class FirstFragment extends Fragment {
         //EditText tvLabel = (EditText) view.findViewById(R.id.editText);
         // tvLabel.setText(page + " -- " + title);
 
-        MapView mapView = new MapView(this.getActivity());
+        mapView = new MapView(this.getActivity());
         ViewGroup mapViewContainer = (ViewGroup) view.findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
+        // 중심점 변경 - 예제 좌표는 서울 남산
+        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304), true);
+        // 줌 레벨 변경
+        mapView.setZoomLevel(4, true);
+  /*
         // 중심점 변경 - 예제 좌표는 서울 남산
         mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304), true);
         // 줌 레벨 변경
@@ -79,9 +85,8 @@ public class FirstFragment extends Fragment {
         marker.setMapPoint(MARKER_POINT);
         marker.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
         marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 기본으로 제공하는 RedPin 마커 모양.
-
         mapView.addPOIItem(marker);
-
+*/
         ExcelFileRead();
 
         return view;
@@ -124,13 +129,24 @@ public class FirstFragment extends Fragment {
                             marker.setItemName(myCell.toString());
                             Log.e("Cell", myCell.toString());
                         }else if(counter == 3) {//emotion
-                            if(myCell.toString()=="좋음")
-                                marker.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 BluePin 마커 모양.
-                            if(myCell.toString()=="보통")
-                                marker.setMarkerType(MapPOIItem.MarkerType.YellowPin);
-                            if(myCell.toString()=="나쁨")
-                                marker.setMarkerType(MapPOIItem.MarkerType.RedPin);
-                            Log.e("Cell", myCell.toString());
+                            if(myCell.toString().equals("좋음")) {
+                                marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                                marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_48px); // 마커 이미지.
+                                marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                                marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                            }
+                            if(myCell.toString().equals("보통")) {
+                                marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                                marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_48px); // 마커 이미지.
+                                marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                                marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                            }
+                            if(myCell.toString().equals("나쁨")) {
+                                marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                                marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_48px); // 마커 이미지.
+                                marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                                marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                            }
                         }else if(counter == 4) {//lat
                             lat = myCell.getNumericCellValue();
                            // MARKER_POINT = MapPoint.mapPointWithGeoCoord(myCell, );
@@ -140,13 +156,16 @@ public class FirstFragment extends Fragment {
                             MARKER_POINT = MapPoint.mapPointWithGeoCoord(lat, lon);
                             Log.e("Cell", myCell.toString());
                         }
+                        marker.setMapPoint(MARKER_POINT);
+                        mapView.addPOIItem(marker);
                     }
-                    marker.setMapPoint(MARKER_POINT);
+
                     counter = 0;
                 }
 
             }
-
+            mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat, lon), true);
+            mapView.setZoomLevel(4, true);
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();

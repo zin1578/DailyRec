@@ -62,7 +62,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_third, container, false);
-        TextView textView = (TextView) view.findViewById(R.id.diaryText);
+    //    TextView textView = (TextView) view.findViewById(R.id.diaryText);
         // 뷰에 있는 위젯들 리턴 받아두기
         //datePicker = (DatePicker) view.findViewById(R.id.datePicker);
         viewDatePick = (TextView) view.findViewById(R.id.viewDatePick);
