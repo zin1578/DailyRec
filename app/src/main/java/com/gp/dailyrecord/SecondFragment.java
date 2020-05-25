@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
@@ -133,6 +134,8 @@ public class SecondFragment extends Fragment {
 
 
         }
+       // ((MainActivity)getActivity()).refresh();
+
     }
 
 

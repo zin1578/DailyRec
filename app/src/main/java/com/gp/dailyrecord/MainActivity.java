@@ -802,6 +802,12 @@ public class MainActivity extends AppCompatActivity {
             return "Page " + position;
         }
 
+
+
+    }
+
+    protected void refresh(){
+        adapterViewPager.notifyDataSetChanged();
     }
 
 

@@ -203,5 +203,24 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         }
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            // Refresh your fragment here
+
+            // 오늘 날짜를 받게해주는 Calender 친구들
+            Calendar c = Calendar.getInstance();
+            int cYear = c.get(Calendar.YEAR);
+            int cMonth = c.get(Calendar.MONTH);
+            int cDay = c.get(Calendar.DAY_OF_MONTH);
+            // 첫 시작 시에는 오늘 날짜 일기 읽어주기
+            checkedDay(cYear, cMonth, cDay);
+            getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+            Log.i("IsRefresh", "Yes");
+        } else {
+
+        }
+    }
 
 }
