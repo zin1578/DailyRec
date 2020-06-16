@@ -69,7 +69,7 @@
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/edtDiary"
+            android:id="@+id/editDiary"
             android:layout_width="match_parent"
             android:layout_height="395dp"
             android:background="@android:color/transparent"

@@ -118,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
     Row row;
     Cell c;
 
+    //태그
+    String tags;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -403,6 +405,45 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 } //감정분석 끝
+
+                 //키워드 //태그
+                 {
+                    int good_count = 0;
+                    int bad_count = 0;
+                    StringBuilder sb = new StringBuilder();
+                     String[] good_tag = new String[]{"맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
+                     String[] bad_tag = new String[]{"별로", "맛없", "불친절", "짜증", "화가나는", "화가 나", "짜증", "화가 났","화 나", "화났", "빡쳐", "빡침", "답답", "환멸"};
+                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점"};
+
+                     if(str1.contains("맛집")||(str1.contains("맛있")||str1.contains("존맛"))&&(str1.contains("카페")||str1.contains("여기")||str1.contains("이 집"))) {
+                     sb.append("#맛집 ");
+                     }
+
+                     for (int i = 0; i <good_tag.length; i++) {
+                         if (str1.contains(good_tag[i])) { //긍정 키워드 수 세기
+                             good_count++;
+                         }
+                     }
+                     for (int i = 0; i <bad_tag.length; i++) {
+                         if (str1.contains(bad_tag[i])) {//부정 키워드 수 세기
+                             bad_count++;
+                         }
+                     }
+                     for (int i = 0; i <place_tag.length; i++) {
+                         if (str1.contains(place_tag[i])) { //장소 태그 쓰기
+                             sb.append("#"+place_tag[i]+" ");
+                         }
+                     }
+                     if(good_count>0&&(bad_count==0)){ //긍정 키워드 있고 부정 키워드 없으면 #좋음
+                         sb.append("#좋음 ");
+                     }else if(good_count==0&&(bad_count>0)){ //위와 반대
+                         sb.append("#불만족 ");
+                     }
+
+                     tags = sb.toString();
+
+                 }
+
                  try {
                      WriteExcelFile();
                      return;
@@ -586,7 +627,7 @@ public class MainActivity extends AppCompatActivity {
 
         long now = System.currentTimeMillis(); // 현재시간 받아오기
         Date date = new Date(now); // Date 객체 생성
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String nowTime = sdf.format(date); //시간 스트링
 
 
@@ -627,6 +668,9 @@ public class MainActivity extends AppCompatActivity {
                 c = row.createCell(4); //경도
                 c.setCellValue(longitude);
 
+                c = row.createCell(5); //태그
+                c.setCellValue(tags);
+
                 //파일계속 null이라 막무가내로 파일 경로 만들기...
 
                 //  File excelFile = new File(fileName);
@@ -662,6 +706,8 @@ public class MainActivity extends AppCompatActivity {
             c = row.createCell(4);
             c.setCellValue("경도");
 
+            c = row.createCell(5);
+            c.setCellValue("태그");
             //내용 입력
           //  sheet = (HSSFSheet) workbook.getSheetAt(0);
             int rowsNum = sheet.getLastRowNum();
@@ -682,6 +728,8 @@ public class MainActivity extends AppCompatActivity {
             c = row.createCell(4); //경도
             c.setCellValue(longitude);
 
+            c = row.createCell(5); //태그
+            c.setCellValue(tags);
             //파일계속 null이라 막무가내로 파일 경로 만들기...
 
             //  File excelFile = new File(fileName);
@@ -695,70 +743,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-         /*   //내용 입력
-            sheet = (HSSFSheet) workbook.getSheetAt(0);
-            int rowsNum = sheet.getLastRowNum();
 
-            row = sheet.createRow(++rowsNum); //다음번 로우
-            //    Log.isLoggable("row", mLastRowNum);
-            c = row.createCell(0); //시간
-            c.setCellValue(nowTime);
-
-            c = row.createCell(1); //내용
-            c.setCellValue(str1);
-
-            c = row.createCell(2); //감정
-            c.setCellValue(emotionJson);
-
-            c = row.createCell(3); //위도
-            c.setCellValue(latitude);
-
-            c = row.createCell(4); //경도
-            c.setCellValue(longitude);
-
-            //파일계속 null이라 막무가내로 파일 경로 만들기...
-
-            //  File excelFile = new File(fileName);
-            try {
-                FileOutputStream os = new FileOutputStream(excelFile);
-                workbook.write(os);
-                workbook.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-          */
-
- /*
-       //////read Excel TEST
-       // String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/"+fileName;
-      //  java.io.File excelFile = new java.io.File(filePath);
-        try {
-            FileInputStream myInput = new FileInputStream(excelFile);
-            POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
-            HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
-            if (writer.getNumberOfSheets() != 0) {
-                sheet = writer.getSheetAt(0);
-                //We now need something to iterate through the cells.
-                Iterator rowIter = sheet.rowIterator();
-
-                while (rowIter.hasNext()) {
-                    HSSFRow myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
-                    Iterator cellIter = myRow.cellIterator();
-                    Log.isLoggable("row", myRow.getRowNum());
-                    while (cellIter.hasNext()) {
-                        HSSFCell myCell = (HSSFCell) cellIter.next();
-                        Log.e("Cell", myCell.toString());
-                    }
-                }
-            }
-
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-*/
     }
 
 
@@ -794,15 +779,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-
         // Returns the page title for the top indicator
         @Override
         public CharSequence getPageTitle(int position) {
             return "Page " + position;
         }
-
-
 
     }
 

@@ -77,7 +77,7 @@ public class SecondFragment extends Fragment {
         //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
         int date_count = 1;
         int table_count = 0;
-        while (date_count < 15) {
+        while (date_count < 32) {
             if (date_count < 10) {
                 fileName = date_text + "0" + date_count + ".xls";
                 filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
