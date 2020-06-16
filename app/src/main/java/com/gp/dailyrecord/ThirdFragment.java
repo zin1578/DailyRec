@@ -1,14 +1,18 @@
 package com.gp.dailyrecord;
 
 import android.app.DatePickerDialog;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import java.io.FileInputStream;
@@ -43,6 +47,8 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     String fileName;   //  fileName - 돌고 도는 선택된 날짜의 파일 이름
     DatePickerDialog picker;
     HSSFSheet sheet;
+    ListView listview ;
+    ListViewAdapter adapter;
 
     // newInstance constructor for creating fragment with arguments
     public static ThirdFragment newInstance(int page, String title) {
@@ -69,28 +75,28 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         // 뷰에 있는 위젯들 리턴 받아두기
         //datePicker = (DatePicker) view.findViewById(R.id.datePicker);
         viewDatePick = (TextView) view.findViewById(R.id.viewDatePick);
-        editDiary = (EditText) view.findViewById(R.id.editDiary);
+    //    editDiary = (EditText) view.findViewById(R.id.editDiary);
         btnSave = (Button) view.findViewById(R.id.btnSave);
         btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
+
+        // Adapter 생성
+        adapter = new ListViewAdapter() ;
+
+        // 리스트뷰 참조 및 Adapter달기
+        listview = (ListView) view.findViewById(R.id.listview1);
+        listview.setAdapter(adapter);
 
         // 오늘 날짜를 받게해주는 Calender 친구들
         Calendar c = Calendar.getInstance();
         int cYear = c.get(Calendar.YEAR);
         int cMonth = c.get(Calendar.MONTH);
         int cDay = c.get(Calendar.DAY_OF_MONTH);
+
         // 첫 시작 시에는 오늘 날짜 일기 읽어주기
             checkedDay(cYear, cMonth, cDay);
 
-     /*   // datePick 기능 만들기
-        // datePicker.init(연도,달,일)
-        datePicker.init(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(), new DatePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                // 이미 선택한 날짜에 일기가 있는지 없는지 체크해야할 시간이다
-                checkedDay(year, monthOfYear, dayOfMonth);
-            }
-        });
-*/
+
+
         // 저장/수정 버튼 누르면 실행되는 리스너
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,7 +146,12 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(); //string buffer
+        String time ="";
+        String str ="";
+        String tag ="";
+        String emo ="";
+
         // 받은 날짜로 날짜 보여주는
         viewDatePick.setText(year + " - " + (monthOfYear+1)+ " - " + dayOfMonth);
         // 파일 이름을 만들어준다. 파일 이름은 "20170318.txt" 이런식으로 나옴
@@ -176,33 +187,49 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
                                 counter++;
                                 HSSFCell myCell = (HSSFCell) cellIter.next();
                                 if (counter == 1) {//time
-                                    sb.append(myCell.toString()+"  |  ");
+                                   // sb.append(myCell.toString()+"  |  ");
+                                   time =myCell.toString();
                                     Log.e("Cell", myCell.toString());
                                 } else if (counter == 2) {//str
-                                    sb.append(myCell.toString());
+                                   // sb.append(myCell.toString());
+                                    str = myCell.toString();
                                     Log.e("Cell", myCell.toString());
                                 } else if (counter == 3) {//emotion
                                     if (myCell.toString().equals("좋음")) {
+                                        emo="좋음";
                                               }
                                     if (myCell.toString().equals("보통")) {
+                                        emo="보통";
                                          }
                                     if (myCell.toString().equals("나쁨")) {
+                                        emo="나쁨";
                                       }
                                 } else if (counter == 4) {//lat
 
                                 } else if (counter == 5) {//lon
 
                                 }else if (counter == 6) {//태그
-                                    sb.append("\n             "+myCell.toString()+"\n\n");
+                                  // sb.append("\n             "+myCell.toString()+"\n\n");
+                                    tag = myCell.toString();
                                 }
 
                             }
-
+                            if(emo.equals("좋음")) {
+                                adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
+                                        str, tag);
+                            }else if (emo.equals("보통")){
+                                adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_satisfied_48px),
+                                        str, tag);
+                            }else if(emo.equals("나쁨")){
+                                adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_dissatisfied_48px),
+                                        str, tag);
+                            }
                             counter = 0;
                         }
 
                     }
-                    editDiary.setText(sb.toString());
+
+              //     editDiary.setText(sb.toString());
                     writer.close();
                 } catch (IOException e) {
                     e.printStackTrace();
