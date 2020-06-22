@@ -3,10 +3,13 @@ package com.gp.dailyrecord;
 import android.app.DatePickerDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -41,14 +44,18 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
     DatePicker datePicker;  //  datePicker - 날짜를 선택하는 달력
     TextView viewDatePick;  //  viewDatePick - 선택한 날짜를 보여주는 textView
+    EditText searchText;
     EditText editDiary;   //  editDiary - 선택한 날짜의 일기를 쓰거나 기존에 저장된 일기가 있다면 보여주고 수정하는 영역
     Button btnSave;   //  btnSave - 선택한 날짜의 일기 저장 및 수정(덮어쓰기) 버튼
     Button btnDatePick;
     String fileName;   //  fileName - 돌고 도는 선택된 날짜의 파일 이름
     DatePickerDialog picker;
     HSSFSheet sheet;
-    ListView listview ;
+    ListView listview;
     ListViewAdapter adapter;
+
+    //중복방지
+    boolean twice=false;
 
     // newInstance constructor for creating fragment with arguments
     public static ThirdFragment newInstance(int page, String title) {
@@ -63,6 +70,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     // Store instance variables based on arguments passed
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
     }
 
@@ -71,14 +79,12 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_third, container, false);
-    //    TextView textView = (TextView) view.findViewById(R.id.diaryText);
-        // 뷰에 있는 위젯들 리턴 받아두기
-        //datePicker = (DatePicker) view.findViewById(R.id.datePicker);
+
         viewDatePick = (TextView) view.findViewById(R.id.viewDatePick);
     //    editDiary = (EditText) view.findViewById(R.id.editDiary);
         btnSave = (Button) view.findViewById(R.id.btnSave);
         btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
-
+        searchText = (EditText) view.findViewById(R.id.searchText); //검색 텍스트
         // Adapter 생성
         adapter = new ListViewAdapter() ;
 
@@ -94,8 +100,6 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
         // 첫 시작 시에는 오늘 날짜 일기 읽어주기
             checkedDay(cYear, cMonth, cDay);
-
-
 
         // 저장/수정 버튼 누르면 실행되는 리스너
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -126,6 +130,29 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             }
         });
 
+        //검색창 리스너
+        searchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable edit) {
+                String filterText = edit.toString() ;
+                if (filterText.length() > 0) {
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter(filterText) ;
+                } else {
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter("") ;
+                    // listview.clearTextFilter() ;
+                    Log.i("clearTextFilter", "executed");
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        }) ;
+
         return view;
     }
 
@@ -140,12 +167,22 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         String dates = Integer.toString(dayOfMonth);
         String months = Integer.toString(month);
         String years = Integer.toString(year);
-
     }
 
 
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
+
+
+        //중복방지
+        if(twice == false){
+            twice = true;
+        }else {
+            twice = false;
+            return;
+        }
+
+
         StringBuilder sb = new StringBuilder(); //string buffer
         String time ="";
         String str ="";
@@ -229,6 +266,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
                     }
 
+                    adapter.notifyDataSetChanged();
               //     editDiary.setText(sb.toString());
                     writer.close();
                 } catch (IOException e) {
@@ -265,5 +303,6 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
         }
     }
+
 
 }
