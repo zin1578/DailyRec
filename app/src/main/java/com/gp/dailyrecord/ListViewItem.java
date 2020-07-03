@@ -6,6 +6,7 @@ public class ListViewItem {
     private Drawable iconDrawable ;
     private String titleStr ;
     private String descStr ;
+    private String dateStr;
 
     public void setIcon(Drawable icon) {
         iconDrawable = icon ;
@@ -16,6 +17,9 @@ public class ListViewItem {
     public void setDesc(String desc) {
         descStr = desc ;
     }
+    public void setDate(String date){
+        dateStr = date;
+    }
 
     public Drawable getIcon() {
         return this.iconDrawable ;
@@ -25,5 +29,8 @@ public class ListViewItem {
     }
     public String getDesc() {
         return this.descStr ;
+    }
+    public String getDate(){
+        return this.dateStr;
     }
 }

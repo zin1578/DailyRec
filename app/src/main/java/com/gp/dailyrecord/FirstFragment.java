@@ -90,8 +90,6 @@ public class FirstFragment extends Fragment {
         checkedDay(cYear, cMonth, cDay);
         ExcelFileRead();
 
-
-
         btnDatePick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -200,6 +198,8 @@ public class FirstFragment extends Fragment {
 
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
+
+     mapView.removeAllPOIItems();
 
         MapPoint MARKER_POINT = MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304);
         MapPOIItem marker = new MapPOIItem();

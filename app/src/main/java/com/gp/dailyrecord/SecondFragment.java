@@ -134,9 +134,20 @@ public class SecondFragment extends Fragment {
 
 
         }
-       // ((MainActivity)getActivity()).refresh();
+        //((MainActivity)getActivity()).refresh();
 
     }
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            // Refresh your fragment here
 
+            getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+            Log.i("IsRefresh", "Yes");
+        } else {
+
+        }
+    }
 
 }

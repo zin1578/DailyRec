@@ -85,6 +85,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         btnSave = (Button) view.findViewById(R.id.btnSave);
         btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
         searchText = (EditText) view.findViewById(R.id.searchText); //검색 텍스트
+
         // Adapter 생성
         adapter = new ListViewAdapter() ;
 
@@ -172,17 +173,15 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
-
-
-        //중복방지
+        adapter.clear();
+      /*  //중복방지
         if(twice == false){
             twice = true;
         }else {
             twice = false;
             return;
         }
-
-
+*/
         StringBuilder sb = new StringBuilder(); //string buffer
         String time ="";
         String str ="";
@@ -253,13 +252,13 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
                             }
                             if(emo.equals("좋음")) {
                                 adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
-                                        str, tag);
+                                        str, tag, time);
                             }else if (emo.equals("보통")){
                                 adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_satisfied_48px),
-                                        str, tag);
+                                        str, tag, time);
                             }else if(emo.equals("나쁨")){
                                 adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_dissatisfied_48px),
-                                        str, tag);
+                                        str, tag, time);
                             }
                             counter = 0;
                         }
@@ -269,6 +268,8 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
                     adapter.notifyDataSetChanged();
               //     editDiary.setText(sb.toString());
                     writer.close();
+
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

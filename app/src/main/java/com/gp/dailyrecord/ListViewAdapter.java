@@ -25,6 +25,9 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
 
     }
 
+    public void clear(){
+        listViewItemList.clear();
+    }
     // Adapter에 사용되는 데이터의 개수를 리턴. : 필수 구현
     @Override
     public int getCount() {
@@ -47,6 +50,8 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         ImageView iconImageView = (ImageView) convertView.findViewById(R.id.imageView1) ;
         TextView titleTextView = (TextView) convertView.findViewById(R.id.textView1) ;
         TextView descTextView = (TextView) convertView.findViewById(R.id.textView2) ;
+        TextView dateTextView = (TextView) convertView.findViewById(R.id.textView3) ;
+
 
         // Data Set(listViewItemList)에서 position에 위치한 데이터 참조 획득
         ListViewItem listViewItem = filteredItemList.get(position);
@@ -55,6 +60,7 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         iconImageView.setImageDrawable(listViewItem.getIcon());
         titleTextView.setText(listViewItem.getTitle());
         descTextView.setText(listViewItem.getDesc());
+        dateTextView.setText(listViewItem.getDate());
 
         return convertView;
     }
@@ -72,12 +78,13 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
     }
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(Drawable icon, String title, String desc) {
+    public void addItem(Drawable icon, String title, String desc, String date) {
         ListViewItem item = new ListViewItem();
 
         item.setIcon(icon);
         item.setTitle(title);
         item.setDesc(desc);
+        item.setDate(date);
 
         listViewItemList.add(item);
     }

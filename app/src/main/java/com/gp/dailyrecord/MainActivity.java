@@ -627,8 +627,9 @@ public class MainActivity extends AppCompatActivity {
 
         long now = System.currentTimeMillis(); // 현재시간 받아오기
         Date date = new Date(now); // Date 객체 생성
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        String nowTime = sdf.format(date); //시간 스트링
+       // SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        SimpleDateFormat nowDate = new SimpleDateFormat("yyyy-MM-dd  HH:mm");
+        String nowTime = nowDate.format(date); //시간 스트링
 
 
       //  HSSFWorkbook writer = new HSSFWorkbook();
