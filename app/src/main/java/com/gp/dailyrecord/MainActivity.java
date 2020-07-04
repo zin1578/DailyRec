@@ -391,17 +391,17 @@ public class MainActivity extends AppCompatActivity {
                     if (emotionJson.equals("나쁨")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/ 감정: 나쁨 /", str1);
+                  //      WriteFile("/ 감정: 나쁨 /", str1);
 
                     } else if (emotionJson.equals("보통")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/ 감정: 보통 /", str1);
+                      //  WriteFile("/ 감정: 보통 /", str1);
 
                     } else if (emotionJson.equals("좋음")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/ 감정: 좋음 /", str1);
+                        //WriteFile("/ 감정: 좋음 /", str1);
 
                     }
                 } //감정분석 끝
@@ -590,6 +590,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //텍스트 파일로 쓰기//현재 쓰지 않음
+    /*
     void WriteFile(String curEmo, String text){
         try {
             Date currentTime = Calendar.getInstance().getTime();
@@ -615,7 +617,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+*/
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     void WriteExcelFile() throws IOException {
@@ -623,7 +625,8 @@ public class MainActivity extends AppCompatActivity {
         Date currentTime = Calendar.getInstance().getTime();
         String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
         //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
-        String fileName =  date_text+""+".xls";
+        String name = "save_file";
+        String fileName =  name+".xls";
 
         long now = System.currentTimeMillis(); // 현재시간 받아오기
         Date date = new Date(now); // Date 객체 생성

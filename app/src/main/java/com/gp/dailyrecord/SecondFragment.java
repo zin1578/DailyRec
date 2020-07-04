@@ -22,6 +22,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -73,18 +74,16 @@ public class SecondFragment extends Fragment {
     void ExcelFileRead() {
         //excel file   // 같은 달 맨 마지막 감정 불러
         Date currentTime = Calendar.getInstance().getTime();
-        String date_text = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(currentTime);
+        String date_text = new SimpleDateFormat("yyyy-MM-", Locale.getDefault()).format(currentTime);
         //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
         int date_count = 1;
         int table_count = 0;
-        while (date_count < 32) {
-            if (date_count < 10) {
-                fileName = date_text + "0" + date_count + ".xls";
-                filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
-            } else {
-                fileName = date_text + "" + date_count + ".xls";
-                filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
-            }
+        int rowNum = 0;
+        boolean lrowCheck = false;
+        String dcStr ="";
+        fileName ="save_file.xls";
+        filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
+
             //파일 경로를 지정
             File files = new File(filePath);
             //파일 유무를 확인
@@ -98,42 +97,67 @@ public class SecondFragment extends Fragment {
                     HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
                     if (writer.getNumberOfSheets() != 0) {
                         sheet = writer.getSheetAt(0);
-                        int lrow = sheet.getLastRowNum(); //마지막 로우 가져온다.
-                        HSSFRow myRow = sheet.getRow(lrow);
-                        HSSFCell myCell = myRow.getCell(2);
-                        if (myCell.toString().equals("보통")) {
-                            String buttonID = "table_" + (table_count+1);
-                            int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
-                            Button button = ((Button) view.findViewById(resID));
-                            button.setBackgroundResource(R.drawable.ic_sentiment_satisfied_48px);
-                            table_count++;
-                        } else if (myCell.toString().equals("좋음")) {
-                            String buttonID = "table_" + (table_count+1);
-                            int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
-                            Button button = ((Button) view.findViewById(resID));
-                            button.setBackgroundResource(R.drawable.ic_sentiment_very_satisfied_48px);
-                            table_count++;
-                        } else if (myCell.toString().equals("나쁨")) {
-                            String buttonID = "table_" + (table_count+1);
-                            int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
-                            Button button = ((Button) view.findViewById(resID));
-                            button.setBackgroundResource(R.drawable.ic_sentiment_very_dissatisfied_48px);
-                            table_count++;
-                        }
+                        /** We now need something to iterate through the cells. **/
+                        Iterator rowIter = sheet.rowIterator();
+                        HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
+                        myRow = (HSSFRow) rowIter.next();
+                        while (date_count < 32&&lrowCheck==false) {//마지막 줄이면 그만하기
+                            if(date_count<10){
+                                dcStr = "0"+date_count;
+                            }else{
+                                dcStr = ""+date_count;
+                            }
+                            while(myRow.getCell(0).toString().contains(date_text+dcStr)&&lrowCheck==false) {
+                                while (myRow.getCell(0).toString().contains(date_text+dcStr)&&rowIter.hasNext()) {
+                                    myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                                }
+                                if(!rowIter.hasNext()){ //마지막 줄이면
+                                    rowNum = myRow.getRowNum();
+                                    lrowCheck = true;
+                                }else {
+                                    rowNum = myRow.getRowNum();
+                                    rowNum--;
+                                }
+                                myRow.setRowNum(rowNum);
+                                // HSSFRow myRow = sheet.getRow(lrow);
+                                HSSFCell myCell = myRow.getCell(2);
+                                if (myCell.toString().equals("보통")) {
+                                    String buttonID = "table_" + (table_count + 1);
+                                    int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
+                                    Button button = ((Button) view.findViewById(resID));
+                                    button.setBackgroundResource(R.drawable.ic_sentiment_satisfied_48px);
+                                    table_count++;
+                                    date_count++;
+                                } else if (myCell.toString().equals("좋음")) {
+                                    String buttonID = "table_" + (table_count + 1);
+                                    int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
+                                    Button button = ((Button) view.findViewById(resID));
+                                    button.setBackgroundResource(R.drawable.ic_sentiment_very_satisfied_48px);
+                                    table_count++;
+                                    date_count++;
+                                } else if (myCell.toString().equals("나쁨")) {
+                                    String buttonID = "table_" + (table_count + 1);
+                                    int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
+                                    Button button = ((Button) view.findViewById(resID));
+                                    button.setBackgroundResource(R.drawable.ic_sentiment_very_dissatisfied_48px);
+                                    table_count++;
+                                    date_count++;
+                                }
+                            }
+                            date_count++;
                     }
 
+                }
                     writer.close();
-                    date_count++;
+            } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-            } else {
-                date_count++;//파일이 없을시
+        }else{
+
             }
-
-
-        }
         //((MainActivity)getActivity()).refresh();
 
     }

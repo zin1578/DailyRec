@@ -98,9 +98,10 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         int cYear = c.get(Calendar.YEAR);
         int cMonth = c.get(Calendar.MONTH);
         int cDay = c.get(Calendar.DAY_OF_MONTH);
-
+        // 첫 시작 시에는 엑셀파일 다 읽어오기
+        ReadExcel();
         // 첫 시작 시에는 오늘 날짜 일기 읽어주기
-            checkedDay(cYear, cMonth, cDay);
+           checkedDay(cYear, cMonth, cDay);
 
         // 저장/수정 버튼 누르면 실행되는 리스너
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -137,7 +138,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             public void afterTextChanged(Editable edit) {
                 String filterText = edit.toString() ;
                 if (filterText.length() > 0) {
-                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter(filterText) ;
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter(filterText);
                 } else {
                     ((ListViewAdapter)listview.getAdapter()).getFilter().filter("") ;
                     // listview.clearTextFilter() ;
@@ -170,110 +171,119 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         String years = Integer.toString(year);
     }
 
+    //
+    // 일기 파일 읽기
+    private void ReadExcel() {
+        adapter.clear();
+        StringBuilder sb = new StringBuilder(); //string buffer
+        String time ="";
+        String str ="";
+        String tag ="";
+        String emo ="";
+        String dateBF = "";
+
+        fileName = "save_file.xls";
+        String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
+        java.io.File excelFile = new java.io.File(filePath);
+
+        if(excelFile.exists()) {
+            try {
+                FileInputStream myInput = new FileInputStream(excelFile);
+                POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
+                HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
+                if (writer.getNumberOfSheets() != 0) {
+                    sheet = writer.getSheetAt(0);
+                    /** We now need something to iterate through the cells. **/
+                    Iterator rowIter = sheet.rowIterator();
+                    HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
+                    int counter = 0; //엑셀 셀 카운터
+                    while (rowIter.hasNext()) {
+                        myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                        Iterator cellIter = myRow.cellIterator();
+                        Log.isLoggable("row", myRow.getRowNum());
+                        while (cellIter.hasNext()) {
+                            counter++;
+                            HSSFCell myCell = (HSSFCell) cellIter.next();
+                            if (counter == 1) {//time
+                                // sb.append(myCell.toString()+"  |  ");
+                                time = myCell.toString();
+                                Log.e("Cell", myCell.toString());
+                            } else if (counter == 2) {//str
+                                // sb.append(myCell.toString());
+                                str = myCell.toString();
+                                Log.e("Cell", myCell.toString());
+                            } else if (counter == 3) {//emotion
+                                if (myCell.toString().equals("좋음")) {
+                                    emo="좋음";
+                                }
+                                if (myCell.toString().equals("보통")) {
+                                    emo="보통";
+                                }
+                                if (myCell.toString().equals("나쁨")) {
+                                    emo="나쁨";
+                                }
+                            } else if (counter == 4) {//lat
+
+                            } else if (counter == 5) {//lon
+
+                            }else if (counter == 6) {//태그
+                                // sb.append("\n             "+myCell.toString()+"\n\n");
+                                tag = myCell.toString();
+                            }
+
+                        }
+                        if(emo.equals("좋음")) {
+                            adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
+                                    str, tag, time);
+                        }else if (emo.equals("보통")){
+                            adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_satisfied_48px),
+                                    str, tag, time);
+                        }else if(emo.equals("나쁨")){
+                            adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_dissatisfied_48px),
+                                    str, tag, time);
+                        }
+                        counter = 0;
+                    }
+
+                }
+
+                adapter.notifyDataSetChanged();
+                //     editDiary.setText(sb.toString());
+                writer.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
 
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
-        adapter.clear();
-      /*  //중복방지
-        if(twice == false){
-            twice = true;
-        }else {
-            twice = false;
-            return;
-        }
-*/
+    //    adapter.clear();
+
         StringBuilder sb = new StringBuilder(); //string buffer
         String time ="";
         String str ="";
         String tag ="";
         String emo ="";
 
+        String dateBF = "";
         // 받은 날짜로 날짜 보여주는
         viewDatePick.setText(year + " - " + (monthOfYear+1)+ " - " + dayOfMonth);
         // 파일 이름을 만들어준다. 파일 이름은 "20170318.txt" 이런식으로 나옴
 
         if(dayOfMonth<10 && monthOfYear<10)
-            fileName = year + "0" + (monthOfYear+1) + "0" + dayOfMonth + ".xls";
+            dateBF= year +"-"+ "0" + (monthOfYear+1) +"-"+ "0" + dayOfMonth;
         else if(dayOfMonth>=10&&monthOfYear<10)
-            fileName = year + "0" + (monthOfYear+1) + "" + dayOfMonth + ".xls";
+            dateBF = year +"-"+ "0" + (monthOfYear+1) + "-" + dayOfMonth;
         else if(dayOfMonth<10&&monthOfYear>=10)
-            fileName = year + "" + (monthOfYear+1) + "0" + dayOfMonth + ".xls";
+            dateBF = year + "-"+ (monthOfYear+1) +"-"+ "0" + dayOfMonth;
         else if(dayOfMonth>=10&&monthOfYear>=10)
-            fileName = year + "" + (monthOfYear+1) + "" + dayOfMonth + ".xls";
+            dateBF = year + "-"+ (monthOfYear+1) + "-" + dayOfMonth;
 
-            String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
-            java.io.File excelFile = new java.io.File(filePath);
-
-            if(excelFile.exists()) {
-                try {
-                    FileInputStream myInput = new FileInputStream(excelFile);
-                    POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
-                    HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
-                    if (writer.getNumberOfSheets() != 0) {
-                        sheet = writer.getSheetAt(0);
-                        /** We now need something to iterate through the cells. **/
-                        Iterator rowIter = sheet.rowIterator();
-                        HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
-                        int counter = 0; //엑셀 셀 카운터
-                        while (rowIter.hasNext()) {
-                            myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
-                            Iterator cellIter = myRow.cellIterator();
-                            Log.isLoggable("row", myRow.getRowNum());
-                            while (cellIter.hasNext()) {
-                                counter++;
-                                HSSFCell myCell = (HSSFCell) cellIter.next();
-                                if (counter == 1) {//time
-                                   // sb.append(myCell.toString()+"  |  ");
-                                   time =myCell.toString();
-                                    Log.e("Cell", myCell.toString());
-                                } else if (counter == 2) {//str
-                                   // sb.append(myCell.toString());
-                                    str = myCell.toString();
-                                    Log.e("Cell", myCell.toString());
-                                } else if (counter == 3) {//emotion
-                                    if (myCell.toString().equals("좋음")) {
-                                        emo="좋음";
-                                              }
-                                    if (myCell.toString().equals("보통")) {
-                                        emo="보통";
-                                         }
-                                    if (myCell.toString().equals("나쁨")) {
-                                        emo="나쁨";
-                                      }
-                                } else if (counter == 4) {//lat
-
-                                } else if (counter == 5) {//lon
-
-                                }else if (counter == 6) {//태그
-                                  // sb.append("\n             "+myCell.toString()+"\n\n");
-                                    tag = myCell.toString();
-                                }
-
-                            }
-                            if(emo.equals("좋음")) {
-                                adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
-                                        str, tag, time);
-                            }else if (emo.equals("보통")){
-                                adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_satisfied_48px),
-                                        str, tag, time);
-                            }else if(emo.equals("나쁨")){
-                                adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_dissatisfied_48px),
-                                        str, tag, time);
-                            }
-                            counter = 0;
-                        }
-
-                    }
-
-                    adapter.notifyDataSetChanged();
-              //     editDiary.setText(sb.toString());
-                    writer.close();
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        ((ListViewAdapter)listview.getAdapter()).getFilter().filter(dateBF);
 
         }
 
@@ -296,7 +306,9 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             int cYear = c.get(Calendar.YEAR);
             int cMonth = c.get(Calendar.MONTH);
             int cDay = c.get(Calendar.DAY_OF_MONTH);
-            // 첫 시작 시에는 오늘 날짜 일기 읽어주기
+            // 첫 시작 시에는 엑셀파일 다 읽어오기
+            ReadExcel();
+            //첫 시작 시에 오늘 날짜 일기만 추리기.
             checkedDay(cYear, cMonth, cDay);
             getFragmentManager().beginTransaction().detach(this).attach(this).commit();
             Log.i("IsRefresh", "Yes");

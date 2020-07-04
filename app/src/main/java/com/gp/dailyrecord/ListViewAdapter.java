@@ -114,7 +114,8 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
 
                 for (ListViewItem item : listViewItemList) {
                     if (item.getTitle().toUpperCase().contains(constraint.toString().toUpperCase()) ||
-                            item.getDesc().toUpperCase().contains(constraint.toString().toUpperCase()))
+                            item.getDesc().toUpperCase().contains(constraint.toString().toUpperCase())||
+                    item.getDate().contains(constraint.toString()))
                     {
                         itemList.add(item) ;
                     }
