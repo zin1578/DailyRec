@@ -31,7 +31,7 @@ import java.util.Locale;
 
 
 
-
+//
 public class SecondFragment extends Fragment {
     // Store instance variables
     private String title;
