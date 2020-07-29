@@ -42,7 +42,15 @@
                 android:layout_gravity="center"
                 android:background="@android:drawable/ic_menu_my_calendar" />
 
+            <EditText
+                android:id="@+id/searchText"
+                android:layout_width="5dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:hint="Search" />
+
         </LinearLayout>
+
 
     </LinearLayout>
 
@@ -68,17 +76,12 @@
             android:text=""
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/edtDiary"
+        <ListView
+            android:id="@+id/listview1"
             android:layout_width="match_parent"
-            android:layout_height="395dp"
-            android:background="@android:color/transparent"
-            android:ems="10"
-            android:gravity="start|top|center_vertical"
-            android:inputType="text|textMultiLine|textCapSentences"
-            android:padding="7sp"
-            android:text="" />
-
+            android:layout_height="match_parent"
+            android:textFilterEnabled="true" />
     </LinearLayout>
+
 
 </LinearLayout>

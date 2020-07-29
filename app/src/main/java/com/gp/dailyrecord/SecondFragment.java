@@ -31,7 +31,7 @@ import java.util.Locale;
 
 
 
-//
+
 public class SecondFragment extends Fragment {
     // Store instance variables
     private String title;
@@ -105,19 +105,19 @@ public class SecondFragment extends Fragment {
                             String buttonID = "table_" + (table_count+1);
                             int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
                             Button button = ((Button) view.findViewById(resID));
-                            button.setBackgroundResource(R.drawable.ic_sentiment_satisfied_48x);
+                            button.setBackgroundResource(R.drawable.ic_sentiment_satisfied_48px);
                             table_count++;
                         } else if (myCell.toString().equals("좋음")) {
                             String buttonID = "table_" + (table_count+1);
                             int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
                             Button button = ((Button) view.findViewById(resID));
-                            button.setBackgroundResource(R.drawable.ic_sentiment_very_satisfied_48x);
+                            button.setBackgroundResource(R.drawable.ic_sentiment_very_satisfied_48px);
                             table_count++;
                         } else if (myCell.toString().equals("나쁨")) {
                             String buttonID = "table_" + (table_count+1);
                             int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
                             Button button = ((Button) view.findViewById(resID));
-                            button.setBackgroundResource(R.drawable.ic_sentiment_very_satisfied_48x);
+                            button.setBackgroundResource(R.drawable.ic_sentiment_very_dissatisfied_48px);
                             table_count++;
                         }
                     }

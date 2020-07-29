@@ -1,32 +1,41 @@
 package com.gp.dailyrecord;
 
 import android.app.DatePickerDialog;
-import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.fragment.app.DialogFragment;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Iterator;
+
 import android.annotation.SuppressLint;
 
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.Toast;
 
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import static android.content.Context.MODE_NO_LOCALIZED_COLLATORS;
 
@@ -35,11 +44,18 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
     DatePicker datePicker;  //  datePicker - 날짜를 선택하는 달력
     TextView viewDatePick;  //  viewDatePick - 선택한 날짜를 보여주는 textView
-    EditText edtDiary;   //  edtDiary - 선택한 날짜의 일기를 쓰거나 기존에 저장된 일기가 있다면 보여주고 수정하는 영역
+    EditText searchText;
+    EditText editDiary;   //  editDiary - 선택한 날짜의 일기를 쓰거나 기존에 저장된 일기가 있다면 보여주고 수정하는 영역
     Button btnSave;   //  btnSave - 선택한 날짜의 일기 저장 및 수정(덮어쓰기) 버튼
     Button btnDatePick;
     String fileName;   //  fileName - 돌고 도는 선택된 날짜의 파일 이름
     DatePickerDialog picker;
+    HSSFSheet sheet;
+    ListView listview;
+    ListViewAdapter adapter;
+
+    //중복방지
+    boolean twice=false;
 
     // newInstance constructor for creating fragment with arguments
     public static ThirdFragment newInstance(int page, String title) {
@@ -54,6 +70,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     // Store instance variables based on arguments passed
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
     }
 
@@ -62,32 +79,30 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_third, container, false);
-    //    TextView textView = (TextView) view.findViewById(R.id.diaryText);
-        // 뷰에 있는 위젯들 리턴 받아두기
-        //datePicker = (DatePicker) view.findViewById(R.id.datePicker);
+
         viewDatePick = (TextView) view.findViewById(R.id.viewDatePick);
-        edtDiary = (EditText) view.findViewById(R.id.edtDiary);
+    //    editDiary = (EditText) view.findViewById(R.id.editDiary);
         btnSave = (Button) view.findViewById(R.id.btnSave);
         btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
+        searchText = (EditText) view.findViewById(R.id.searchText); //검색 텍스트
+
+        // Adapter 생성
+        adapter = new ListViewAdapter() ;
+
+        // 리스트뷰 참조 및 Adapter달기
+        listview = (ListView) view.findViewById(R.id.listview1);
+        listview.setAdapter(adapter);
 
         // 오늘 날짜를 받게해주는 Calender 친구들
         Calendar c = Calendar.getInstance();
         int cYear = c.get(Calendar.YEAR);
         int cMonth = c.get(Calendar.MONTH);
         int cDay = c.get(Calendar.DAY_OF_MONTH);
+        // 첫 시작 시에는 엑셀파일 다 읽어오기
+        ReadExcel();
         // 첫 시작 시에는 오늘 날짜 일기 읽어주기
-            checkedDay(cYear, cMonth, cDay);
+           checkedDay(cYear, cMonth, cDay);
 
-     /*   // datePick 기능 만들기
-        // datePicker.init(연도,달,일)
-        datePicker.init(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(), new DatePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                // 이미 선택한 날짜에 일기가 있는지 없는지 체크해야할 시간이다
-                checkedDay(year, monthOfYear, dayOfMonth);
-            }
-        });
-*/
         // 저장/수정 버튼 누르면 실행되는 리스너
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,6 +132,29 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             }
         });
 
+        //검색창 리스너
+        searchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable edit) {
+                String filterText = edit.toString() ;
+                if (filterText.length() > 0) {
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter(filterText);
+                } else {
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter("") ;
+                    // listview.clearTextFilter() ;
+                    Log.i("clearTextFilter", "executed");
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        }) ;
+
         return view;
     }
 
@@ -131,76 +169,130 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         String dates = Integer.toString(dayOfMonth);
         String months = Integer.toString(month);
         String years = Integer.toString(year);
+    }
+
+    //
+    // 일기 파일 읽기
+    private void ReadExcel() {
+        adapter.clear();
+        StringBuilder sb = new StringBuilder(); //string buffer
+        String time ="";
+        String str ="";
+        String tag ="";
+        String emo ="";
+        String dateBF = "";
+
+        fileName = "save_file.xls";
+        String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
+        java.io.File excelFile = new java.io.File(filePath);
+
+        if(excelFile.exists()) {
+            try {
+                FileInputStream myInput = new FileInputStream(excelFile);
+                POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
+                HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
+                if (writer.getNumberOfSheets() != 0) {
+                    sheet = writer.getSheetAt(0);
+                    /** We now need something to iterate through the cells. **/
+                    Iterator rowIter = sheet.rowIterator();
+                    HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
+                    int counter = 0; //엑셀 셀 카운터
+                    while (rowIter.hasNext()) {
+                        myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                        Iterator cellIter = myRow.cellIterator();
+                        Log.isLoggable("row", myRow.getRowNum());
+                        while (cellIter.hasNext()) {
+                            counter++;
+                            HSSFCell myCell = (HSSFCell) cellIter.next();
+                            if (counter == 1) {//time
+                                // sb.append(myCell.toString()+"  |  ");
+                                time = myCell.toString();
+                                Log.e("Cell", myCell.toString());
+                            } else if (counter == 2) {//str
+                                // sb.append(myCell.toString());
+                                str = myCell.toString();
+                                Log.e("Cell", myCell.toString());
+                            } else if (counter == 3) {//emotion
+                                if (myCell.toString().equals("좋음")) {
+                                    emo="좋음";
+                                }
+                                if (myCell.toString().equals("보통")) {
+                                    emo="보통";
+                                }
+                                if (myCell.toString().equals("나쁨")) {
+                                    emo="나쁨";
+                                }
+                            } else if (counter == 4) {//lat
+
+                            } else if (counter == 5) {//lon
+
+                            }else if (counter == 6) {//태그
+                                // sb.append("\n             "+myCell.toString()+"\n\n");
+                                tag = myCell.toString();
+                            }
+
+                        }
+                        if(emo.equals("좋음")) {
+                            adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
+                                    str, tag, time);
+                        }else if (emo.equals("보통")){
+                            adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_satisfied_48px),
+                                    str, tag, time);
+                        }else if(emo.equals("나쁨")){
+                            adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_dissatisfied_48px),
+                                    str, tag, time);
+                        }
+                        counter = 0;
+                    }
+
+                }
+
+                adapter.notifyDataSetChanged();
+                //     editDiary.setText(sb.toString());
+                writer.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
 
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
+    //    adapter.clear();
 
+        StringBuilder sb = new StringBuilder(); //string buffer
+        String time ="";
+        String str ="";
+        String tag ="";
+        String emo ="";
+
+        String dateBF = "";
         // 받은 날짜로 날짜 보여주는
         viewDatePick.setText(year + " - " + (monthOfYear+1)+ " - " + dayOfMonth);
         // 파일 이름을 만들어준다. 파일 이름은 "20170318.txt" 이런식으로 나옴
 
         if(dayOfMonth<10 && monthOfYear<10)
-            fileName = year + "0" + (monthOfYear+1) + "0" + dayOfMonth + ".txt";
+            dateBF= year +"-"+ "0" + (monthOfYear+1) +"-"+ "0" + dayOfMonth;
         else if(dayOfMonth>=10&&monthOfYear<10)
-            fileName = year + "0" + (monthOfYear+1) + "" + dayOfMonth + ".txt";
+            dateBF = year +"-"+ "0" + (monthOfYear+1) + "-" + dayOfMonth;
         else if(dayOfMonth<10&&monthOfYear>=10)
-            fileName = year + "" + (monthOfYear+1) + "0" + dayOfMonth + ".txt";
+            dateBF = year + "-"+ (monthOfYear+1) +"-"+ "0" + dayOfMonth;
         else if(dayOfMonth>=10&&monthOfYear>=10)
-            fileName = year + "" + (monthOfYear+1) + "" + dayOfMonth + ".txt";
+            dateBF = year + "-"+ (monthOfYear+1) + "-" + dayOfMonth;
 
-        StringBuffer buffer= new StringBuffer();
-        try {
-            Log.i("Dirlog", "cur dir:" + getContext().getFilesDir().toString());
-            FileInputStream fis=getActivity().openFileInput(fileName);
-            BufferedReader reader= new BufferedReader(new InputStreamReader(fis));
-            String str=reader.readLine();//한 줄씩 읽어오기
-            while(str!=null){
-                buffer.append(str+"\n");
-                str=reader.readLine();
-            }
-            Log.i("mylog", "file contents:"+buffer);
-            // 읽어서 토스트 메시지로 보여줌
-            //      Toast.makeText(getApplicationContext(), "일기 써둔 날", Toast.LENGTH_SHORT).show();
-            edtDiary.setText(buffer.toString());
-            //        btnSave.setText("저장");
+        ((ListViewAdapter)listview.getAdapter()).getFilter().filter(dateBF);
 
-        } catch (Exception e) { // UnsupportedEncodingException , FileNotFoundException , IOException
-            // 없어서 오류가 나면 일기가 없는 것 -> 일기를 쓰게 한다.
-            //  Toast.makeText(getApplicationContext(), "일기 없는 날", Toast.LENGTH_SHORT).show();
-            edtDiary.setText("");
-            //      btnSave.setText("저장");
-
-            e.printStackTrace();
         }
 
-    }
 
     // 일기 저장하는 메소드
     @SuppressLint("WrongConstant")
     private void saveDiary(String readDay) {
 
-        FileOutputStream fos = null;
 
-        try {
-
-            fos = getActivity().openFileOutput(readDay, MODE_NO_LOCALIZED_COLLATORS); //MODE_WORLD_WRITEABLE //MODE_NO_LOCALIZED_COLLATORS
-            String content = edtDiary.getText().toString();
-
-            // String.getBytes() = 스트링을 배열형으로 변환?
-            fos.write(content.getBytes());
-            //fos.flush();
-            fos.close();
-
-            // getApplicationContext() = 현재 클래스.this ?
-           // Toast.makeText(getApplicationContext(), "일기 저장됨", Toast.LENGTH_SHORT).show();
-
-        } catch (Exception e) { // Exception - 에러 종류 제일 상위 // FileNotFoundException , IOException
-            e.printStackTrace();
-            //Toast.makeText(getApplicationContext(), "오류오류", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -214,7 +306,9 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             int cYear = c.get(Calendar.YEAR);
             int cMonth = c.get(Calendar.MONTH);
             int cDay = c.get(Calendar.DAY_OF_MONTH);
-            // 첫 시작 시에는 오늘 날짜 일기 읽어주기
+            // 첫 시작 시에는 엑셀파일 다 읽어오기
+            ReadExcel();
+            //첫 시작 시에 오늘 날짜 일기만 추리기.
             checkedDay(cYear, cMonth, cDay);
             getFragmentManager().beginTransaction().detach(this).attach(this).commit();
             Log.i("IsRefresh", "Yes");
@@ -222,5 +316,6 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
         }
     }
+
 
 }
