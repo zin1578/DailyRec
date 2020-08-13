@@ -7,12 +7,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
@@ -44,7 +48,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
     DatePicker datePicker;  //  datePicker - 날짜를 선택하는 달력
     TextView viewDatePick;  //  viewDatePick - 선택한 날짜를 보여주는 textView
-    EditText searchText;
+ //   EditText searchText;
     EditText editDiary;   //  editDiary - 선택한 날짜의 일기를 쓰거나 기존에 저장된 일기가 있다면 보여주고 수정하는 영역
     Button btnSave;   //  btnSave - 선택한 날짜의 일기 저장 및 수정(덮어쓰기) 버튼
     Button btnDatePick;
@@ -53,7 +57,8 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     HSSFSheet sheet;
     ListView listview;
     ListViewAdapter adapter;
-
+    MenuItem searchItem;
+    MenuItem mSearch;
     //중복방지
     boolean twice=false;
 
@@ -72,19 +77,123 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     public void onCreate(Bundle savedInstanceState) {
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
+
+
+    }
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+      //  super.onCreateOptionsMenu(menu, inflater);
+        //inflater.inflate(R.menu.menu, menu);
+        searchItem = menu.findItem(R.id.menu_search);
+        mSearch = menu.findItem(R.id.menu_search);
+
+
+        mSearch.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return false;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                ((ListViewAdapter)listview.getAdapter()).getFilter().filter("") ;
+                Log.i("collapse", "executed");
+                return false;
+            }
+        });
+        SearchView sv = (SearchView)mSearch.getActionView();
+
+        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String filterText = query;
+                if (filterText.length() > 0) {
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter(filterText);
+
+                } else {
+                    ((ListViewAdapter)listview.getAdapter()).getFilter().filter("") ;
+                    //listview.clearTextFilter() ;
+                    Log.i("clearTextFilter", "executed");
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //화면에 설정한 메뉴를 사용자가 선택하면 onOptionsItemSelected 메소드가 호출됨
+        int curId = item.getItemId();
+        //어떤 메뉴를 선택했는지를 id로 구분하여 처리
+        switch(curId) {
+            case R.id.menu_date_pick:
+                final Calendar cldr = Calendar.getInstance();
+                int day = cldr.get(Calendar.DAY_OF_MONTH);
+                int month = cldr.get(Calendar.MONTH);
+                int year = cldr.get(Calendar.YEAR);
+                // date picker dialog
+                picker = new DatePickerDialog(getActivity(),
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+                                checkedDay(year, monthOfYear, dayOfMonth);
+                            }
+                        }, year, month, day);
+                picker.show();
+                break;
+            case R.id.menu_fav:
+                break;
+            case R.id.menu_search:
+
+        /*        searchView.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void afterTextChanged(Editable edit) {
+                        String filterText = edit.toString() ;
+                        if (filterText.length() > 0) {
+                            ((ListViewAdapter)listview.getAdapter()).getFilter().filter(filterText);
+                        } else {
+                            ((ListViewAdapter)listview.getAdapter()).getFilter().filter("") ;
+                            // listview.clearTextFilter() ;
+                            Log.i("clearTextFilter", "executed");
+                        }
+                    }
+
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+                }) ;
+          */
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
     // Inflate the view for the fragment based on layout XML
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_third, container, false);
 
         viewDatePick = (TextView) view.findViewById(R.id.viewDatePick);
+
     //    editDiary = (EditText) view.findViewById(R.id.editDiary);
-        btnSave = (Button) view.findViewById(R.id.btnSave);
-        btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
-        searchText = (EditText) view.findViewById(R.id.searchText); //검색 텍스트
+     //   btnSave = (Button) view.findViewById(R.id.btnSave);
+     //   btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
+     //   searchText = (EditText) view.findViewById(R.id.searchText); //검색 텍스트
 
         // Adapter 생성
         adapter = new ListViewAdapter() ;
@@ -101,8 +210,10 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         // 첫 시작 시에는 엑셀파일 다 읽어오기
         ReadExcel();
         // 첫 시작 시에는 오늘 날짜 일기 읽어주기
-           checkedDay(cYear, cMonth, cDay);
+        checkedDay(cYear, cMonth, cDay);
 
+
+/*
         // 저장/수정 버튼 누르면 실행되는 리스너
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,7 +265,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         }) ;
-
+*/
         return view;
     }
 
@@ -247,7 +358,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
 
                 }
 
-                adapter.notifyDataSetChanged();
+           //     adapter.notifyDataSetChanged();
                 //     editDiary.setText(sb.toString());
                 writer.close();
 
@@ -310,7 +421,7 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
             ReadExcel();
             //첫 시작 시에 오늘 날짜 일기만 추리기.
             checkedDay(cYear, cMonth, cDay);
-            getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        //    getFragmentManager().beginTransaction().detach(this).attach(this).commit();
             Log.i("IsRefresh", "Yes");
         } else {
 

@@ -19,40 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="fill_horizontal"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnSave"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="48dp"
-                android:layout_height="36dp"
-                android:layout_gravity="center"
-                android:background="@android:drawable/ic_menu_edit" />
-
-            <Button
-                android:id="@+id/datePick"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="49dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:background="@android:drawable/ic_menu_my_calendar" />
-
-            <EditText
-                android:id="@+id/searchText"
-                android:layout_width="5dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:hint="Search" />
-
-        </LinearLayout>
-
-
-    </LinearLayout>
+        android:orientation="vertical"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -60,12 +27,6 @@
         android:orientation="vertical"
         android:padding="5sp">
 
-
-        <TextView
-            android:id="@+id/naviInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="save   datepick" />
 
         <TextView
             android:id="@+id/viewDatePick"

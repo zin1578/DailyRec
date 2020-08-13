@@ -3,6 +3,7 @@ package com.gp.dailyrecord;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,8 +22,12 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,6 +86,37 @@ import java.util.Locale;
 import org.apache.poi.*;
 
 public class MainActivity extends AppCompatActivity {
+   @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu); //메뉴 XML파일 인플레이션
+
+
+
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //화면에 설정한 메뉴를 사용자가 선택하면 onOptionsItemSelected 메소드가 호출됨
+        int curId = item.getItemId();
+        //어떤 메뉴를 선택했는지를 id로 구분하여 처리
+        switch(curId) {
+            case R.id.menu_date_pick:
+                Toast.makeText(this, "데이트픽 메뉴가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.menu_fav:
+                Toast.makeText(this, "즐겨찾기가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.menu_search:
+                Toast.makeText(this, "검색 메뉴가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     private AppCompatActivity mActivity;
     //adams 감정분석 관련 변수

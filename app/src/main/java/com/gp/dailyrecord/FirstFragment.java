@@ -4,11 +4,14 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -40,7 +43,8 @@ public class FirstFragment extends Fragment {
     private String title;
     private int page;
     HSSFSheet sheet;
-    double lat, lon;
+    double lat = 37.54892296550104;
+    double lon = 126.99089033876304;
     MapView mapView;
     Button btnDatePick;
     DatePickerDialog picker;
@@ -58,19 +62,56 @@ public class FirstFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
         page = getArguments().getInt("someInt", 0);
         title = getArguments().getString("someTitle");
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //화면에 설정한 메뉴를 사용자가 선택하면 onOptionsItemSelected 메소드가 호출됨
+        int curId = item.getItemId();
+        //어떤 메뉴를 선택했는지를 id로 구분하여 처리
+        switch(curId) {
+            case R.id.menu_date_pick:
+                final Calendar cldr = Calendar.getInstance();
+                int day = cldr.get(Calendar.DAY_OF_MONTH);
+                int month = cldr.get(Calendar.MONTH);
+                int year = cldr.get(Calendar.YEAR);
+                // date picker dialog
+                picker = new DatePickerDialog(getActivity(),
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+                                checkedDay(year, monthOfYear, dayOfMonth);
+                            }
+                        }, year, month, day);
+                picker.show();
+                break;
+            case R.id.menu_fav:
+
+                break;
+            case R.id.menu_search:
+
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
     // Inflate the view for the fragment based on layout XML
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_first, container, false);
         //EditText tvLabel = (EditText) view.findViewById(R.id.editText);
         // tvLabel.setText(page + " -- " + title);
-        btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
+    ///    btnDatePick = (Button)view.findViewById(R.id.datePick); //달력 버튼
         //    editDiary = (EditText) view.findViewById(R.id.editDiary);
         mapView = new MapView(this.getActivity());
         ViewGroup mapViewContainer = (ViewGroup) view.findViewById(R.id.map_view);
@@ -90,7 +131,7 @@ public class FirstFragment extends Fragment {
         // 첫 시작 시에는 오늘 날짜 일기 읽어주기
         checkedDay(cYear, cMonth, cDay);
        // ExcelFileRead();
-
+/*
         btnDatePick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,7 +151,7 @@ public class FirstFragment extends Fragment {
                 picker.show();
             }
         });
-
+*/
         return view;
     }
 

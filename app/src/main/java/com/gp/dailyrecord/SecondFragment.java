@@ -80,41 +80,52 @@ public class SecondFragment extends Fragment {
         int table_count = 0;
         int rowNum = 0;
         boolean lrowCheck = false;
-        String dcStr ="";
-        fileName ="save_file.xls";
+        String dcStr = "";
+        fileName = "save_file.xls";
         filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
 
-            //파일 경로를 지정
-            File files = new File(filePath);
-            //파일 유무를 확인
-            if (files.exists() == true) {
-                //파일이 있을시
-                String filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
-                File excelFile = new File(filePath);
-                try {
-                    FileInputStream myInput = new FileInputStream(excelFile);
-                    POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
-                    HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
-                    if (writer.getNumberOfSheets() != 0) {
-                        sheet = writer.getSheetAt(0);
-                        /** We now need something to iterate through the cells. **/
-                        Iterator rowIter = sheet.rowIterator();
-                        HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
-                        myRow = (HSSFRow) rowIter.next();
-                        while (date_count < 32&&lrowCheck==false) {//마지막 줄이면 그만하기
-                            if(date_count<10){
-                                dcStr = "0"+date_count;
-                            }else{
-                                dcStr = ""+date_count;
+        //파일 경로를 지정
+        File files = new File(filePath);
+        //파일 유무를 확인
+        if (files.exists() == true) {
+            //파일이 있을시
+            String filePath = getActivity().getFilesDir().getPath().toString() + "/" + fileName;
+            File excelFile = new File(filePath);
+            try {
+                FileInputStream myInput = new FileInputStream(excelFile);
+                POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
+                HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
+                if (writer.getNumberOfSheets() != 0) {
+                    sheet = writer.getSheetAt(0);
+                    /** We now need something to iterate through the cells. **/
+                    Iterator rowIter = sheet.rowIterator();
+                    HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
+                    myRow = (HSSFRow) rowIter.next();
+                    while (!(myRow.getCell(0).toString().contains(date_text))&&lrowCheck == false) {
+                        myRow = (HSSFRow) rowIter.next(); //해달 달이 아니면 스킵
+                        if (!rowIter.hasNext()) { //마지막 줄이면
+                            rowNum = myRow.getRowNum();
+                            lrowCheck = true;
+                        }else {
+                            rowNum = myRow.getRowNum();
+                            rowNum--;
+                        }
+                        myRow.setRowNum(rowNum);
+                    }
+                        while (date_count < 32 && lrowCheck == false) {//마지막 줄이면 그만하기
+                            if (date_count < 10) {
+                                dcStr = "0" + date_count;
+                            } else {
+                                dcStr = "" + date_count;
                             }
-                            while(myRow.getCell(0).toString().contains(date_text+dcStr)&&lrowCheck==false) {
-                                while (myRow.getCell(0).toString().contains(date_text+dcStr)&&rowIter.hasNext()) {
+                            while (myRow.getCell(0).toString().contains(date_text + dcStr) && lrowCheck == false) {
+                                while (myRow.getCell(0).toString().contains(date_text + dcStr) && rowIter.hasNext()) {
                                     myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
                                 }
-                                if(!rowIter.hasNext()){ //마지막 줄이면
+                                if (!rowIter.hasNext()) { //마지막 줄이면
                                     rowNum = myRow.getRowNum();
                                     lrowCheck = true;
-                                }else {
+                                } else {
                                     rowNum = myRow.getRowNum();
                                     rowNum--;
                                 }
@@ -145,23 +156,24 @@ public class SecondFragment extends Fragment {
                                 }
                             }
                             date_count++;
+                        }
+
                     }
-
-                }
                     writer.close();
+
+
+
+                //((MainActivity)getActivity()).refresh();
+
             } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-        }else{
-
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        //((MainActivity)getActivity()).refresh();
 
+        }
     }
-    @Override
+                @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {

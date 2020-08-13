@@ -25,15 +25,15 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="15dp" />
+            android:layout_height="10dp" />
 
         <ImageButton
             android:id="@+id/sttStart"
-            android:layout_width="33dp"
-            android:layout_height="41dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
-            app:srcCompat="@android:drawable/presence_audio_online" />
+            app:srcCompat="@drawable/ic_settings_voice_48px" />
 
     </LinearLayout>
 
