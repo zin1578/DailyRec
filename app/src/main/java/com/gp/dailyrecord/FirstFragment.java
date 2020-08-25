@@ -92,6 +92,8 @@ public class FirstFragment extends Fragment {
                 picker.show();
                 break;
             case R.id.menu_fav:
+                //임시적 맛집 카테고리 #맛집 태그 포함 일기 모두 불러오기
+                tagSearch("#맛집");
 
                 break;
             case R.id.menu_search:
@@ -327,7 +329,7 @@ public class FirstFragment extends Fragment {
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
         //excel file
-
+        mapView.removeAllPOIItems();
         String fileName =  "save_file.xls";
         String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
         java.io.File excelFile = new java.io.File(filePath);
@@ -419,4 +421,88 @@ public class FirstFragment extends Fragment {
 
         }
 
+
+
+    // 일기 파일 읽기
+    private void tagSearch(String tag) {
+        //excel file
+        mapView.removeAllPOIItems();
+        String fileName =  "save_file.xls";
+        String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
+        java.io.File excelFile = new java.io.File(filePath);
+        MapPoint MARKER_POINT = MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304);
+        MapPOIItem marker = new MapPOIItem();
+
+        if(excelFile.exists()) {
+            try {
+                FileInputStream myInput = new FileInputStream(excelFile);
+                POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
+                HSSFWorkbook writer = new HSSFWorkbook(myFileSystem);
+                if (writer.getNumberOfSheets() != 0) {
+                    sheet = writer.getSheetAt(0);
+                    /** We now need something to iterate through the cells. **/
+                    Iterator rowIter = sheet.rowIterator();
+                    HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
+                    int counter = 0; //엑셀 셀 카운터
+                    while (rowIter.hasNext()) {
+                        myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                        Iterator cellIter = myRow.cellIterator();
+                        Log.isLoggable("row", myRow.getRowNum());
+                        if(myRow.getCell(5).toString().contains(tag)) {
+                            while (cellIter.hasNext()) {
+                                counter++;
+                                HSSFCell myCell = (HSSFCell) cellIter.next();
+                                if (counter == 1) {//time
+                                    Log.e("Cell", myCell.toString());
+                                } else if (counter == 2) {//str
+                                    marker.setItemName(myCell.toString());
+                                    Log.e("Cell", myCell.toString());
+                                } else if (counter == 3) {//emotion
+                                    if (myCell.toString().equals("좋음")) {
+                                        marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_48px); // 마커 이미지.
+                                        marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                                        marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                                    }
+                                    if (myCell.toString().equals("보통")) {
+                                        marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_48px); // 마커 이미지.
+                                        marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                                        marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                                    }
+                                    if (myCell.toString().equals("나쁨")) {
+                                        marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_48px); // 마커 이미지.
+                                        marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                                        marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                                    }
+                                } else if (counter == 4) {//lat
+                                    lat = myCell.getNumericCellValue();
+                                    // MARKER_POINT = MapPoint.mapPointWithGeoCoord(myCell, );
+                                    Log.e("Cell", myCell.toString());
+                                } else if (counter == 5) {//lon
+                                    lon = myCell.getNumericCellValue();
+                                    MARKER_POINT = MapPoint.mapPointWithGeoCoord(lat, lon);
+                                    Log.e("Cell", myCell.toString());
+                                    marker.setMapPoint(MARKER_POINT);
+                                    mapView.addPOIItem(marker);
+                                }
+
+                            }
+                        }
+
+                        counter = 0;
+                    }
+
+                }
+                mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat, lon), true);
+                mapView.setZoomLevel(4, true);
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
 }

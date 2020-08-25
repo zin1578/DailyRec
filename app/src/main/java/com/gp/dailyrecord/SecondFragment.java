@@ -101,18 +101,16 @@ public class SecondFragment extends Fragment {
                     Iterator rowIter = sheet.rowIterator();
                     HSSFRow myRow = (HSSFRow) rowIter.next(); //헤더 한 줄 건너뛰기
                     myRow = (HSSFRow) rowIter.next();
-                    while (!(myRow.getCell(0).toString().contains(date_text))&&lrowCheck == false) {
-                        myRow = (HSSFRow) rowIter.next(); //해달 달이 아니면 스킵
+                    //해당 달 일기 찾기
+                    while (!(myRow.getCell(0).toString().contains(date_text)) && lrowCheck == false) {
+                        myRow = (HSSFRow) rowIter.next(); //해당 달이 아니면 스킵
+                        Log.e("row", myRow.toString());
                         if (!rowIter.hasNext()) { //마지막 줄이면
-                            rowNum = myRow.getRowNum();
                             lrowCheck = true;
-                        }else {
-                            rowNum = myRow.getRowNum();
-                            rowNum--;
                         }
-                        myRow.setRowNum(rowNum);
                     }
-                        while (date_count < 32 && lrowCheck == false) {//마지막 줄이면 그만하기
+                    while(lrowCheck == false&&date_count<33) {
+                        //해당달을 포함하지 않으면 그만, 마지막 줄이면 그만, 데이트 카운트 32이면 그만
                             if (date_count < 10) {
                                 dcStr = "0" + date_count;
                             } else {
@@ -120,7 +118,8 @@ public class SecondFragment extends Fragment {
                             }
                             while (myRow.getCell(0).toString().contains(date_text + dcStr) && lrowCheck == false) {
                                 while (myRow.getCell(0).toString().contains(date_text + dcStr) && rowIter.hasNext()) {
-                                    myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
+                                    myRow = (HSSFRow) rowIter.next(); // 한줄 데이터 건너뛰기
+                        //            Log.e("row", myRow.toString());
                                 }
                                 if (!rowIter.hasNext()) { //마지막 줄이면
                                     rowNum = myRow.getRowNum();
@@ -129,7 +128,9 @@ public class SecondFragment extends Fragment {
                                     rowNum = myRow.getRowNum();
                                     rowNum--;
                                 }
-                                myRow.setRowNum(rowNum);
+                                // 해당 일자의 마지막 감정 행 불러오기
+                                myRow = sheet.getRow(rowNum);
+                      //          Log.e("row", myRow.toString());
                                 // HSSFRow myRow = sheet.getRow(lrow);
                                 HSSFCell myCell = myRow.getCell(2);
                                 if (myCell.toString().equals("보통")) {
@@ -139,6 +140,14 @@ public class SecondFragment extends Fragment {
                                     button.setBackgroundResource(R.drawable.ic_sentiment_satisfied_48px);
                                     table_count++;
                                     date_count++;
+                                    if (date_count < 10) {
+                                        dcStr = "0" + date_count;
+                                    } else {
+                                        dcStr = "" + date_count;
+                                    }
+                                    if(rowIter.hasNext()){
+                                        myRow = (HSSFRow) rowIter.next();
+                                    }
                                 } else if (myCell.toString().equals("좋음")) {
                                     String buttonID = "table_" + (table_count + 1);
                                     int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
@@ -146,6 +155,14 @@ public class SecondFragment extends Fragment {
                                     button.setBackgroundResource(R.drawable.ic_sentiment_very_satisfied_48px);
                                     table_count++;
                                     date_count++;
+                                    if (date_count < 10) {
+                                        dcStr = "0" + date_count;
+                                    } else {
+                                        dcStr = "" + date_count;
+                                    }
+                                    if(rowIter.hasNext()){
+                                        myRow = (HSSFRow) rowIter.next();
+                                    }
                                 } else if (myCell.toString().equals("나쁨")) {
                                     String buttonID = "table_" + (table_count + 1);
                                     int resID = getResources().getIdentifier(buttonID, "id", getActivity().getPackageName());
@@ -153,26 +170,30 @@ public class SecondFragment extends Fragment {
                                     button.setBackgroundResource(R.drawable.ic_sentiment_very_dissatisfied_48px);
                                     table_count++;
                                     date_count++;
+                                    if (date_count < 10) {
+                                        dcStr = "0" + date_count;
+                                    } else {
+                                        dcStr = "" + date_count;
+                                    }
+                                    if(rowIter.hasNext()){
+                                        myRow = (HSSFRow) rowIter.next();
+                                    }
                                 }
                             }
                             date_count++;
                         }
-
                     }
+
                     writer.close();
-
-
-
-                //((MainActivity)getActivity()).refresh();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                    //((MainActivity)getActivity()).refresh();
+                } catch(FileNotFoundException e){
+                    e.printStackTrace();
+                } catch(IOException e){
+                    e.printStackTrace();
+                }
             }
-
-        }
     }
+
                 @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);

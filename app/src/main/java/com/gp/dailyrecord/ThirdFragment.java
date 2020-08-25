@@ -334,14 +334,11 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
                                     emo="나쁨";
                                 }
                             } else if (counter == 4) {//lat
-
                             } else if (counter == 5) {//lon
-
                             }else if (counter == 6) {//태그
                                 // sb.append("\n             "+myCell.toString()+"\n\n");
                                 tag = myCell.toString();
                             }
-
                         }
                         if(emo.equals("좋음")) {
                             adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
@@ -355,18 +352,12 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
                         }
                         counter = 0;
                     }
-
                 }
-
-           //     adapter.notifyDataSetChanged();
-                //     editDiary.setText(sb.toString());
                 writer.close();
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
     }
 
 
