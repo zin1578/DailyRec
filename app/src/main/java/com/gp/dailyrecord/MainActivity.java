@@ -446,10 +446,12 @@ public class MainActivity extends AppCompatActivity {
                  {
                     int good_count = 0;
                     int bad_count = 0;
+                    int complex_count = 0;
                     StringBuilder sb = new StringBuilder();
-                     String[] good_tag = new String[]{"맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
-                     String[] bad_tag = new String[]{"별로", "맛없", "불친절", "짜증", "화가나는", "화가 나", "짜증", "화가 났","화 나", "화났", "빡쳐", "빡침", "답답", "환멸"};
-                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점"};
+                     String[] good_tag = new String[]{"서비스가 좋", "위생이 좋","청결", "맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
+                     String[] bad_tag = new String[]{"별로","서비스가 별로", "맛없", "더럽","불친절", "짜증", "화가나는", "화가 나", "짜증", "화가 났","화 나", "화났", "빡쳐", "빡침", "답답", "환멸"};
+                     String[] complex_tag = new String[]{"은데", "지만"};
+                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점", "집"};
 
                      if(str1.contains("맛집")||(str1.contains("맛있")||str1.contains("존맛"))&&(str1.contains("카페")||str1.contains("여기")||str1.contains("이 집"))) {
                      sb.append("#맛집 ");
@@ -465,6 +467,11 @@ public class MainActivity extends AppCompatActivity {
                              bad_count++;
                          }
                      }
+                     for (int i = 0; i <complex_tag.length; i++) {
+                         if (str1.contains(complex_tag[i])) {//부정 키워드 수 세기
+                             complex_count++;
+                         }
+                     }
                      for (int i = 0; i <place_tag.length; i++) {
                          if (str1.contains(place_tag[i])) { //장소 태그 쓰기
                              sb.append("#"+place_tag[i]+" ");
@@ -472,12 +479,11 @@ public class MainActivity extends AppCompatActivity {
                      }
                      if(good_count>0&&(bad_count==0)){ //긍정 키워드 있고 부정 키워드 없으면 #좋음
                          sb.append("#좋음 ");
+                         emotionJson = "좋음";   //긍정 키워드 걸리면 좋음으로 감정 바꿈
                      }else if(good_count==0&&(bad_count>0)){ //위와 반대
                          sb.append("#불만족 ");
                      }
-
                      tags = sb.toString();
-
                  }
 
                  try {
@@ -617,7 +623,6 @@ public class MainActivity extends AppCompatActivity {
                     // jsonObject = result.getJSONObject(0);
                     scoreJson = context.getDouble(0);
                     emotionJson = context.getString(1);
-
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

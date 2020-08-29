@@ -197,19 +197,19 @@ public class FirstFragment extends Fragment {
                             } else if (counter == 3) {//emotion
                                 if (myCell.toString().equals("좋음")) {
                                     marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_48x); // 마커 이미지.
+                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_pin); // 마커 이미지.
                                     marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                     marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                 }
                                 if (myCell.toString().equals("보통")) {
                                     marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_48x); // 마커 이미지.
+                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_pin); // 마커 이미지.
                                     marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                     marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                 }
                                 if (myCell.toString().equals("나쁨")) {
                                     marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_48x); // 마커 이미지.
+                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_pin); // 마커 이미지.
                                     marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                     marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                 }
@@ -281,19 +281,19 @@ public class FirstFragment extends Fragment {
                             } else if (counter == 3) {//emotion
                                 if (myCell.toString().equals("좋음")) {
                                     marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_48px); // 마커 이미지.
+                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_pin); // 마커 이미지.
                                     marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                     marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                 }
                                 if (myCell.toString().equals("보통")) {
                                     marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_48px); // 마커 이미지.
+                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_pin); // 마커 이미지.
                                     marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                     marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                 }
                                 if (myCell.toString().equals("나쁨")) {
                                     marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_48px); // 마커 이미지.
+                                    marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_pin); // 마커 이미지.
                                     marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                     marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                 }
@@ -375,19 +375,19 @@ public class FirstFragment extends Fragment {
                                     } else if (counter == 3) {//emotion
                                         if (myCell.toString().equals("좋음")) {
                                             marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                            marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_48px); // 마커 이미지.
+                                            marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_pin); // 마커 이미지.
                                             marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                             marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                         }
                                         if (myCell.toString().equals("보통")) {
                                             marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                            marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_48px); // 마커 이미지.
+                                            marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_pin); // 마커 이미지.
                                             marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                             marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                         }
                                         if (myCell.toString().equals("나쁨")) {
                                             marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                            marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_48px); // 마커 이미지.
+                                            marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_pin); // 마커 이미지.
                                             marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                             marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                         }
@@ -460,19 +460,19 @@ public class FirstFragment extends Fragment {
                                 } else if (counter == 3) {//emotion
                                     if (myCell.toString().equals("좋음")) {
                                         marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_48px); // 마커 이미지.
+                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_satisfied_pin); // 마커 이미지.
                                         marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                         marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                     }
                                     if (myCell.toString().equals("보통")) {
                                         marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_48px); // 마커 이미지.
+                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_satisfied_pin); // 마커 이미지.
                                         marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                         marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                     }
                                     if (myCell.toString().equals("나쁨")) {
                                         marker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_48px); // 마커 이미지.
+                                        marker.setCustomImageResourceId(R.drawable.ic_sentiment_very_dissatisfied_pin); // 마커 이미지.
                                         marker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
                                         marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                     }

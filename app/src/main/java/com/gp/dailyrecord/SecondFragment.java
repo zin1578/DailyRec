@@ -104,7 +104,7 @@ public class SecondFragment extends Fragment {
                     //해당 달 일기 찾기
                     while (!(myRow.getCell(0).toString().contains(date_text)) && lrowCheck == false) {
                         myRow = (HSSFRow) rowIter.next(); //해당 달이 아니면 스킵
-                        Log.e("row", myRow.toString());
+                        Log.e("row", myRow.getCell(0).toString());
                         if (!rowIter.hasNext()) { //마지막 줄이면
                             lrowCheck = true;
                         }
@@ -118,18 +118,30 @@ public class SecondFragment extends Fragment {
                             }
                             while (myRow.getCell(0).toString().contains(date_text + dcStr) && lrowCheck == false) {
                                 while (myRow.getCell(0).toString().contains(date_text + dcStr) && rowIter.hasNext()) {
+                                  //위의 while문 의심
+                                  //  rowNum = myRow.getRowNum();
+                                    Log.e("row", myRow.getCell(0).toString());
                                     myRow = (HSSFRow) rowIter.next(); // 한줄 데이터 건너뛰기
-                        //            Log.e("row", myRow.toString());
+                                    Log.e("row", myRow.getCell(0).toString());
+                                    //            Log.e("row", myRow.toString());
                                 }
                                 if (!rowIter.hasNext()) { //마지막 줄이면
-                                    rowNum = myRow.getRowNum();
-                                    lrowCheck = true;
-                                } else {
+                                  if(myRow.getCell(0).toString().contains(date_text + dcStr)) {
+                                      //마지막 줄이고 날짜는 이전과 같으면
+                                      rowNum = myRow.getRowNum();
+                                      lrowCheck = true;
+                                  }else{
+                                      //마지막 줄이고 날짜가 이전과 다르면
+                                      rowNum = myRow.getRowNum();
+                                      rowNum--;
+                                  }
+                                } else {//마지막 줄이 아니면
                                     rowNum = myRow.getRowNum();
                                     rowNum--;
                                 }
                                 // 해당 일자의 마지막 감정 행 불러오기
                                 myRow = sheet.getRow(rowNum);
+                                Log.e("row", myRow.getCell(0).toString());
                       //          Log.e("row", myRow.toString());
                                 // HSSFRow myRow = sheet.getRow(lrow);
                                 HSSFCell myCell = myRow.getCell(2);
@@ -147,6 +159,9 @@ public class SecondFragment extends Fragment {
                                     }
                                     if(rowIter.hasNext()){
                                         myRow = (HSSFRow) rowIter.next();
+                                    }else{
+                                        if(lrowCheck==false)
+                                        myRow = sheet.getRow(++rowNum);
                                     }
                                 } else if (myCell.toString().equals("좋음")) {
                                     String buttonID = "table_" + (table_count + 1);
@@ -162,6 +177,9 @@ public class SecondFragment extends Fragment {
                                     }
                                     if(rowIter.hasNext()){
                                         myRow = (HSSFRow) rowIter.next();
+                                    }else{
+                                        if(lrowCheck==false)
+                                        myRow = sheet.getRow(++rowNum);
                                     }
                                 } else if (myCell.toString().equals("나쁨")) {
                                     String buttonID = "table_" + (table_count + 1);
@@ -177,6 +195,9 @@ public class SecondFragment extends Fragment {
                                     }
                                     if(rowIter.hasNext()){
                                         myRow = (HSSFRow) rowIter.next();
+                                    }else{
+                                        if(lrowCheck==false)
+                                        myRow = sheet.getRow(++rowNum);
                                     }
                                 }
                             }
