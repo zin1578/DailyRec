@@ -4,68 +4,38 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@drawable/daily_back">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteY="280dp">
 
-        <FrameLayout
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/vpPager"
             android:layout_width="match_parent"
-            android:layout_height="273dp">
+            android:layout_height="610dp" />
 
-            <fragment
-                android:id="@+id/map"
-                android:name="com.google.android.gms.maps.MapFragment"
-                android:layout_width="match_parent"
-                android:layout_height="278dp"></fragment>
+        <TextView
+            android:id="@+id/sttResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-        </FrameLayout>
-
-        <FrameLayout
+        <Space
             android:layout_width="match_parent"
-            android:layout_height="451dp"
-            android:layout_gravity="bottom">
+            android:layout_height="10dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical">
+        <ImageButton
+            android:id="@+id/sttStart"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_settings_voice_48px" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="87dp" />
-
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="당신은 무엇을 느끼고 있나요?" />
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="63dp" />
-
-                <TextView
-                    android:id="@+id/sttResult"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="70dp" />
-
-                <Button
-                    android:id="@+id/sttStart"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal|center_vertical"
-                    android:text="Button" />
-            </LinearLayout>
-
-        </FrameLayout>
-
-    </FrameLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

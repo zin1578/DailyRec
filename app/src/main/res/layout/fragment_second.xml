@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@drawable/daily_back">
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/table_1"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_2"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_3"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+
+        <Button
+            android:id="@+id/table_4"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_5"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+    </TableRow>
+
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/table_6"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="70dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_7"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_8"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+
+        <Button
+            android:id="@+id/table_9"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_10"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/table_11"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="70dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_12"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_13"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+
+        <Button
+            android:id="@+id/table_14"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_15"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+    </TableRow>
+
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/table_16"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="70dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_17"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_18"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+
+        <Button
+            android:id="@+id/table_19"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_20"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="105dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/table_21"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="70dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_22"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_23"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+
+        <Button
+            android:id="@+id/table_24"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/table_25"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="80dp"
+            android:layout_height="match_parent" />
+    </TableRow>
+
+</TableLayout>
+

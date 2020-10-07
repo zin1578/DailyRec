@@ -1,39 +1,72 @@
 package com.gp.dailyrecord;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.AnimationDrawable;
-import android.location.Geocoder;
+
+import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
+import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Message;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,108 +79,100 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
-import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import android.location.Address;
-import androidx.appcompat.app.AlertDialog;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.maps.model.Marker;
+import org.apache.poi.*;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+public class MainActivity extends AppCompatActivity {
+   @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu); //메뉴 XML파일 인플레이션
 
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
-    private GoogleApiClient mGoogleApiClient = null;
-    private GoogleMap mGoogleMap = null;
-    private Marker currentMarker = null;
 
-    private static final String TAG = "googlemap_example";
-    private static final int GPS_ENABLE_REQUEST_CODE = 2001;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
-    private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
-    private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
+        return true;
+    }
 
-    private LocationManager locationManager;
-    private static final int REQUEST_CODE_LOCATION = 2;
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //화면에 설정한 메뉴를 사용자가 선택하면 onOptionsItemSelected 메소드가 호출됨
+        int curId = item.getItemId();
+        //어떤 메뉴를 선택했는지를 id로 구분하여 처리
+        switch(curId) {
+            case R.id.menu_date_pick:
+                Toast.makeText(this, "데이트픽 메뉴가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.menu_fav:
+                Toast.makeText(this, "즐겨찾기가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.menu_search:
+                Toast.makeText(this, "검색 메뉴가 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     private AppCompatActivity mActivity;
-    boolean askPermissionOnceAgain = false;
-    boolean mRequestingLocationUpdates = false;
-    Location mCurrentLocation;
-    boolean mMoveMapByUser = true;
-    boolean mMoveMapByAPI = true;
-    LatLng currentPosition;
-
     //adams 감정분석 관련 변수
-    String key ="342365250195746161";
+    String key = "4258457626421016575"; //4258457626421016575  //342365250195746161
     String str1; //음성인식 텍스트
-    double userLat, userLon; //사용자의 현재위치 위도 경도
     String data;
     String emotionJson;
     double scoreJson;
+    int badCount, normalCount, goodCount;
 
-    LocationRequest locationRequest = LocationRequest.create()
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(UPDATE_INTERVAL_MS)
-            .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+    //음성인식 중복 방지..
+    boolean twice=false;
+
+
+    // 위치 변수
+    LocationManager mLocationManager;
+    Intent intentThatCalled;
+    public double latitude;
+    public double longitude;
+    public LocationManager locationManager;
+    public Criteria criteria;
+    public String bestProvider;
+
 
     Intent intent;
     SpeechRecognizer mRecognizer;
-    Button sttBtn;
+    ImageButton sttBtn;
     TextView textView;
-
+    //git config --global --add url."https://github.com/".insteadOf "git@github.com:"
     final int PERMISSION = 1;
 
+    //엑셀 관련 변수
+    HSSFSheet sheet;
+    Workbook workbook;
+    Row row;
+    Cell c;
+
+    //태그
+    String tags;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-/*
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_main);
-*/
-
-        Log.d(TAG, "onCreate");
-        mActivity = this;
-
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-
-
-        MapFragment mapFragment = (MapFragment) getFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        ViewPager vpPager = (ViewPager) findViewById(R.id.vpPager);
+        adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
+        vpPager.setAdapter(adapterViewPager);
+        vpPager.setCurrentItem(1, true);//처음화면을 프레그먼트 2로 (홈화면)
 
         if (Build.VERSION.SDK_INT >= 23) {
             // 퍼미션 체크
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET,
                     Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
-
-        sttBtn = (Button) findViewById(R.id.sttStart);
-        textView = (TextView)findViewById(R.id.sttResult);
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        sttBtn = (ImageButton) findViewById(R.id.sttStart);
+        textView = (TextView) findViewById(R.id.sttResult);
         intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
@@ -155,16 +180,152 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
             mRecognizer.setRecognitionListener(listener);
             mRecognizer.startListening(intent);
+
         });
     }
 
+    private void registerLocationUpdates() {
 
-    /* ##캘린더
-    public void onButtonDiaryClicked(View v){
-        Intent intent = new Intent(getApplicationContext(), CalenderActivity.class);
-        startActivityForResult(intent, REQUEST_CODE_MENU);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
+        }
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+
+                1000, 1, mLocationListener);
+
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+
+                1000, 1, mLocationListener);
+
+//1000은 1초마다, 1은 1미터마다 해당 값을 갱신한다는 뜻으로, 딜레이마다 호출하기도 하지만
+
+//위치값을 판별하여 일정 미터단위 움직임이 발생 했을 때에도 리스너를 호출 할 수 있다.
+
     }
-*/
+
+
+
+
+
+    private final LocationListener mLocationListener = new LocationListener() {
+
+        public void onLocationChanged(Location location) {
+//여기서 위치값이 갱신되면 이벤트가 발생한다.
+//값은 Location 형태로 리턴되며 좌표 출력 방법은 다음과 같다.
+
+            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+//Gps 위치제공자에 의한 위치변화. 오차범위가 좁다.
+                longitude = location.getLongitude();    //경도
+                latitude = location.getLatitude();         //위도
+                float accuracy = location.getAccuracy();        //신뢰도
+
+            }
+
+            else {
+//Network 위치제공자에 의한 위치변화
+//Network 위치는 Gps에 비해 정확도가 많이 떨어진다.
+            }
+
+        }
+
+        public void onProviderDisabled(String provider) {
+
+        }
+
+
+
+        public void onProviderEnabled(String provider) {
+
+        }
+
+
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+      //  출처: https://biig.tistory.com/74 [덩치의 안드로이드 스터디]
+    };
+
+
+    private Location getLastKnownLocation() {
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    Activity#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for Activity#requestPermissions for more details.
+
+                }
+            }
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
+    }
+
+    private void getLastLocationNewMethod(){
+        FusedLocationProviderClient mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // GPS location can be null if GPS is switched off
+                        if (location != null) {
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("MapDemoActivity", "Error trying to get last GPS location");
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    final LocationListener gpsLocationListener = new LocationListener() {
+        public void onLocationChanged(Location location) {
+            String provider = location.getProvider();
+            longitude = location.getLongitude();
+            latitude = location.getLatitude();
+          //  double altitude = location.getAltitude();
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        public void onProviderEnabled(String provider) {
+        }
+
+        public void onProviderDisabled(String provider) {
+        }
+    };
+
 
     private RecognitionListener listener = new RecognitionListener() {
         @Override
@@ -190,154 +351,172 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public void onError(int error) {
-            String message;
 
-            switch (error) {
-                case SpeechRecognizer.ERROR_AUDIO:
-                    message = "오디오 에러";
-                    break;
-                case SpeechRecognizer.ERROR_CLIENT:
-                    message = "클라이언트 에러";
-                    break;
-                case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                    message = "퍼미션 없음";
-                    break;
-                case SpeechRecognizer.ERROR_NETWORK:
-                    message = "네트워크 에러";
-                    break;
-                case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                    message = "네트웍 타임아웃";
-                    break;
-                case SpeechRecognizer.ERROR_NO_MATCH:
-                    message = "찾을 수 없음";
-                    break;
-                case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                    message = "RECOGNIZER가 바쁨";
-                    break;
-                case SpeechRecognizer.ERROR_SERVER:
-                    message = "서버가 이상함";
-                    break;
-                case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                    message = "말하는 시간초과";
-                    break;
-                default:
-                    message = "알 수 없는 오류임";
-                    break;
-            }
-
-            Toast.makeText(getApplicationContext(), "에러가 발생하였습니다. : " + message, Toast.LENGTH_SHORT).show();
         }
 
+
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         public void onResults(Bundle results) { //음성인식 후 감정분석
             // 말을 하면 ArrayList에 단어를 넣고 textView에 단어를 이어줍니다.
             ArrayList<String> matches =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-            for (int i = 0; i < matches.size(); i++) {
-                textView.setText(matches.get(i));
+                textView.setText(matches.get(0));
+
+                //중복방지
+            if(twice == false){
+                twice = true;
+            }else {
+                twice = false;
+                return;
             }
+                //위치
+
+            if (Build.VERSION.SDK_INT >= 23 &&
+                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        0);
+            } else {
+                mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                registerLocationUpdates();
+                getLastLocationNewMethod();
+                latitude = getLastKnownLocation().getLatitude();
+                longitude = getLastKnownLocation().getLongitude();
+                mLocationManager.removeUpdates(mLocationListener);
+
+            }
+
             str1 = (String) textView.getText();
-
-
-            //사용자의 위치 수신을 위한 세팅
-            locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-                //사용자의 현재 위치
-            Location userLocation = getMyLocation();
-            if( userLocation != null ) {
-                double latitude = userLocation.getLatitude();
-                double longitude = userLocation.getLongitude();
-                userLat = latitude;
-                userLon = longitude;
-                System.out.println("////////////현재 내 위치값 : "+latitude+","+longitude);
-            }
 
             //감정분석
              {
-                //키워드 작동 안하면
-                Emot t0 = new Emot();
-                t0.start();
+             //   Emot t0 = new Emot(); 감정분석
+             //   t0.start();
+                 Senti t0 = new Senti();
+                 t0.start();
+
                 try {
                     t0.join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
+                /*
                 if (scoreJson < 0.8) {
                     Senti t1 = new Senti();
                     t1.start();
                 }
-                if (scoreJson >= 0.8) {
-                    if (emotionJson.equals("부정")) {                  //감성 종류 : [부정, 중립, 긍정]
+                 */
+                 //##감정 나쁨 보통 좋음 3가지로 수정
+                if(emotionJson.equals("부정")||emotionJson.equals("공포")||emotionJson.equals("슬픔")
+                    ||emotionJson.equals("혐오")||emotionJson.equals("분노")){
+                    badCount++;
+                    emotionJson = "나쁨";
+                }else if(emotionJson.equals("중립")||emotionJson.equals("신뢰")||emotionJson.equals("기대")
+                ||emotionJson.equals("놀라움")){
+                    normalCount++;
+                    emotionJson = "보통";
+                }else if(emotionJson.equals("긍정")||emotionJson.equals("기쁨")){
+                    goodCount++;
+                    emotionJson = "좋음";
+                }else if(true){ //아무것도 잡히지 않았을 때 보통으로
+                    normalCount++;
+                    emotionJson = "보통";
+                }
+                if (true) {
+                    if (emotionJson.equals("나쁨")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/감정: 나쁨 /", str1);
+                  //      WriteFile("/ 감정: 나쁨 /", str1);
 
-                    } else if (emotionJson.equals("중립")) {                  //감성 종류 : [부정, 중립, 긍정]
+                    } else if (emotionJson.equals("보통")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/ 감정: 보통 /", str1);
+                      //  WriteFile("/ 감정: 보통 /", str1);
 
-                    } else if (emotionJson.equals("긍정")) {                  //감성 종류 : [부정, 중립, 긍정]
+                    } else if (emotionJson.equals("좋음")) {                  //감성 종류 : [부정, 중립, 긍정]
                         // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
 
-                        WriteFile("/ 감정: 좋음 /", str1);
-
-                    } else if (emotionJson.equals("기쁨")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 행복 /", str1);
-
-                    } else if (emotionJson.equals("신뢰")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 신뢰 /", str1);
-
-                    } else if (emotionJson.equals("공포")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 공포 /", str1);
-
-                    } else if (emotionJson.equals("기대")) {
-                        if (str1.contains("싶어") || str1.contains("싶다") || str1.contains("싶") || str1.contains("할래") || str1.contains("갈래") || str1.contains("거야")) {
-
-                            WriteFile("/ 일상: 의지/", str1);
-                        } else {
-                            //감성 종류 : [부정, 중립, 긍정]
-                            // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                            WriteFile("/ 감정: 기대 /", str1);
-                        }
-                    } else if (emotionJson.equals("놀라움")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 놀라움 /", str1);
-
-                    } else if (emotionJson.equals("슬픔")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 슬픔 /", str1);
-
-                    } else if (emotionJson.equals("혐오")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 혐오 /", str1);
-
-                    } else if (emotionJson.equals("분노")) {                  //감성 종류 : [부정, 중립, 긍정]
-                        // 감정 종류 : [기쁨, 신뢰, 공포, 기대, 놀라움, 슬픔, 혐오, 분노]
-
-                        WriteFile("/ 감정: 화남 /", str1);
-
-                    } else { //모두 아닌경우
+                        //WriteFile("/ 감정: 좋음 /", str1);
 
                     }
-                }
-            }
+                } //감정분석 끝
+
+                 //키워드 //태그
+                 {
+                    int good_count = 0;
+                    int bad_count = 0;
+                    int complex_count = 0;
+                    StringBuilder sb = new StringBuilder();
+                     String[] good_tag = new String[]{"행복", "서비스가 좋", "위생이 좋","청결", "맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
+                     String[] bad_tag = new String[]{"별로","서비스가 별로", "맛없", "더럽","불친절", "짜증", "화가나는", "화가 나", "짜증", "화가 났","화 나", "화났", "빡쳐", "빡침", "답답", "환멸"};
+                     String[] complex_tag = new String[]{"은데", "지만"};
+                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점", "집", "스타벅스", "투썸", "공차", "길거리", "포차"};
+
+
+                     for (int i = 0; i <good_tag.length; i++) {
+                         if (str1.contains(good_tag[i])) { //긍정 키워드 수 세기
+                             good_count++;
+                         }
+                     }
+                     for (int i = 0; i <bad_tag.length; i++) {
+                         if (str1.contains(bad_tag[i])) {//부정 키워드 수 세기
+                             bad_count++;
+                         }
+                     }
+                     for (int i = 0; i <complex_tag.length; i++) {
+                         if (str1.contains(complex_tag[i])) {//부정 키워드 수 세기
+                             complex_count++;
+                         }
+                     }
+                     for (int i = 0; i <place_tag.length; i++) {
+                         if (str1.contains(place_tag[i])) { //장소 태그 쓰기
+                             sb.append("#"+place_tag[i]+" ");
+                         }
+                     }
+                     if(good_count>0&&(bad_count==0)){ //긍정 키워드 있고 부정 키워드 없으면 #좋음
+                         sb.append("#좋음 ");
+                         emotionJson = "좋음";   //긍정 키워드 걸리면 좋음으로 감정 바꿈
+                     }else if(good_count==0&&(bad_count>0)){ //위와 반대
+                         sb.append("#불만족 ");
+                         emotionJson = "나쁨";
+                     }else if(complex_count>0){
+                         sb.append("#혼합 ");
+                         emotionJson = "보통";
+                     }
+
+                     if(str1.contains("맛집")||(str1.contains("맛있")||str1.contains("존맛"))&&(str1.contains("카페")||str1.contains("여기")||str1.contains("이 집"))) {
+                         sb.append("#맛집 ");
+                     }
+                     if(str1.contains("분위기")&&(str1.contains("좋")||str1.contains("있는")||str1.contains("괜찮"))){
+                         sb.append("#분위기 좋은 ");
+                     }
+                     if((str1.contains("행복"))&&!(emotionJson=="나쁨")){
+                         sb.append("#행복한 ");
+                         emotionJson = "좋음";
+                     }
+                     if(str1.contains("우울")&&emotionJson=="나쁨"){
+                         sb.append("#우울한 ");
+                     }
+                     if(str1.contains("데이트")){
+                         sb.append("#데이트 ");
+                     }
+                     if(str1.contains("너무")&&(str1.contains("맛있")||str1.contains("좋"))&&!(emotionJson=="나쁨")){
+                         emotionJson = "좋음";
+                     }
+
+                     tags = sb.toString();
+                 }
+
+                 try {
+                     WriteExcelFile();
+                     return;
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                 }
+
+             }
         }
-
-
-
-
 
 
         @Override
@@ -350,506 +529,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
 
-
-
-    @Override
-    public void onResume() {
-
-        super.onResume();
-
-        if (mGoogleApiClient.isConnected()) {
-
-            Log.d(TAG, "onResume : call startLocationUpdates");
-            if (!mRequestingLocationUpdates) startLocationUpdates();
-        }
-
-
-        //앱 정보에서 퍼미션을 허가했는지를 다시 검사해봐야 한다.
-        if (askPermissionOnceAgain) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                askPermissionOnceAgain = false;
-
-                checkPermissions();
-            }
-        }
-    }
-
-
-    private void startLocationUpdates() {
-
-        if (!checkLocationServicesStatus()) {
-
-            Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting");
-            showDialogForLocationServiceSetting();
-        }else {
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
-                return;
-            }
-
-
-            Log.d(TAG, "startLocationUpdates : call FusedLocationApi.requestLocationUpdates");
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
-            mRequestingLocationUpdates = true;
-
-            mGoogleMap.setMyLocationEnabled(true);
-
-        }
-
-    }
-
-
-
-    private void stopLocationUpdates() {
-
-        Log.d(TAG,"stopLocationUpdates : LocationServices.FusedLocationApi.removeLocationUpdates");
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        mRequestingLocationUpdates = false;
-    }
-
-
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
-        Log.d(TAG, "onMapReady :");
-
-        mGoogleMap = googleMap;
-
-
-        //런타임 퍼미션 요청 대화상자나 GPS 활성 요청 대화상자 보이기전에
-        //지도의 초기위치를 서울로 이동
-        setDefaultLocation();
-
-        //mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
-        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        mGoogleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener(){
-
-            @Override
-            public boolean onMyLocationButtonClick() {
-
-                Log.d( TAG, "onMyLocationButtonClick : 위치에 따른 카메라 이동 활성화");
-                mMoveMapByAPI = true;
-                return true;
-            }
-        });
-        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
-            @Override
-            public void onMapClick(LatLng latLng) {
-
-                Log.d( TAG, "onMapClick :");
-            }
-        });
-
-        mGoogleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
-
-            @Override
-            public void onCameraMoveStarted(int i) {
-
-                if (mMoveMapByUser == true && mRequestingLocationUpdates){
-
-                    Log.d(TAG, "onCameraMove : 위치에 따른 카메라 이동 비활성화");
-                    mMoveMapByAPI = false;
-                }
-
-                mMoveMapByUser = true;
-
-            }
-        });
-
-
-        mGoogleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-
-            @Override
-            public void onCameraMove() {
-
-
-            }
-        });
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        currentPosition
-                = new LatLng( location.getLatitude(), location.getLongitude());
-
-
-        Log.d(TAG, "onLocationChanged : ");
-
-        String markerTitle = getCurrentAddress(currentPosition);
-        String markerSnippet = "위도:" + String.valueOf(location.getLatitude())
-                + " 경도:" + String.valueOf(location.getLongitude());
-
-        //현재 위치에 마커 생성하고 이동
-        setCurrentLocation(location, markerTitle, markerSnippet);
-
-        mCurrentLocation = location;
-    }
-
-
-    @Override
-    protected void onStart() {
-
-        if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false){
-
-            Log.d(TAG, "onStart: mGoogleApiClient connect");
-            mGoogleApiClient.connect();
-        }
-
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-
-        if (mRequestingLocationUpdates) {
-
-            Log.d(TAG, "onStop : call stopLocationUpdates");
-            stopLocationUpdates();
-        }
-
-        if ( mGoogleApiClient.isConnected()) {
-
-            Log.d(TAG, "onStop : mGoogleApiClient disconnect");
-            mGoogleApiClient.disconnect();
-        }
-
-        super.onStop();
-    }
-
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-
-
-        if ( mRequestingLocationUpdates == false ) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-                int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION);
-
-                if (hasFineLocationPermission == PackageManager.PERMISSION_DENIED) {
-
-                    ActivityCompat.requestPermissions(mActivity,
-                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-                } else {
-
-                    Log.d(TAG, "onConnected : 퍼미션 가지고 있음");
-                    Log.d(TAG, "onConnected : call startLocationUpdates");
-                    startLocationUpdates();
-                    mGoogleMap.setMyLocationEnabled(true);
-                }
-
-            }else{
-
-                Log.d(TAG, "onConnected : call startLocationUpdates");
-                startLocationUpdates();
-                mGoogleMap.setMyLocationEnabled(true);
-            }
-        }
-    }
-
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-        Log.d(TAG, "onConnectionFailed");
-        setDefaultLocation();
-    }
-
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-
-        Log.d(TAG, "onConnectionSuspended");
-        if (cause == CAUSE_NETWORK_LOST)
-            Log.e(TAG, "onConnectionSuspended(): Google Play services " +
-                    "connection lost.  Cause: network lost.");
-        else if (cause == CAUSE_SERVICE_DISCONNECTED)
-            Log.e(TAG, "onConnectionSuspended():  Google Play services " +
-                    "connection lost.  Cause: service disconnected");
-    }
-
-
-    public String getCurrentAddress(LatLng latlng) {
-
-        //지오코더... GPS를 주소로 변환
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-
-        List<Address> addresses;
-
-        try {
-
-            addresses = geocoder.getFromLocation(
-                    latlng.latitude,
-                    latlng.longitude,
-                    1);
-        } catch (IOException ioException) {
-            //네트워크 문제
-            Toast.makeText(this, "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
-            return "지오코더 서비스 사용불가";
-        } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText(this, "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
-            return "잘못된 GPS 좌표";
-
-        }
-
-
-        if (addresses == null || addresses.size() == 0) {
-            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
-            return "주소 미발견";
-
-        } else {
-            Address address = addresses.get(0);
-            return address.getAddressLine(0).toString();
-        }
-
-    }
-
-
-    public boolean checkLocationServicesStatus() {
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-    }
-
-
-    public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
-
-        mMoveMapByUser = false;
-
-
-        if (currentMarker != null) currentMarker.remove();
-
-
-        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(currentLatLng);
-        markerOptions.title(markerTitle);
-        markerOptions.snippet(markerSnippet);
-        markerOptions.draggable(true);
-
-
-        currentMarker = mGoogleMap.addMarker(markerOptions);
-
-
-        if ( mMoveMapByAPI ) {
-
-            Log.d( TAG, "setCurrentLocation :  mGoogleMap moveCamera "
-                    + location.getLatitude() + " " + location.getLongitude() ) ;
-            // CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 15);
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
-            mGoogleMap.moveCamera(cameraUpdate);
-        }
-    }
-
-
-    public void setDefaultLocation() {
-
-        mMoveMapByUser = false;
-
-
-        //디폴트 위치, Seoul
-        LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
-        String markerTitle = "위치정보 가져올 수 없음";
-        String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
-
-
-        if (currentMarker != null) currentMarker.remove();
-
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(DEFAULT_LOCATION);
-        markerOptions.title(markerTitle);
-        markerOptions.snippet(markerSnippet);
-        markerOptions.draggable(true);
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-        currentMarker = mGoogleMap.addMarker(markerOptions);
-
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
-        mGoogleMap.moveCamera(cameraUpdate);
-
-    }
-
-
-    //여기부터는 런타임 퍼미션 처리을 위한 메소드들
-    @TargetApi(Build.VERSION_CODES.M)
-    private void checkPermissions() {
-        boolean fineLocationRationale = ActivityCompat
-                .shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION);
-        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if (hasFineLocationPermission == PackageManager
-                .PERMISSION_DENIED && fineLocationRationale)
-            showDialogForPermission("앱을 실행하려면 퍼미션을 허가하셔야합니다.");
-
-        else if (hasFineLocationPermission
-                == PackageManager.PERMISSION_DENIED && !fineLocationRationale) {
-            showDialogForPermissionSetting("퍼미션 거부 + Don't ask again(다시 묻지 않음) " +
-                    "체크 박스를 설정한 경우로 설정에서 퍼미션 허가해야합니다.");
-        } else if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED) {
-
-
-            Log.d(TAG, "checkPermissions : 퍼미션 가지고 있음");
-
-            if ( mGoogleApiClient.isConnected() == false) {
-
-                Log.d(TAG, "checkPermissions : 퍼미션 가지고 있음");
-                mGoogleApiClient.connect();
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int permsRequestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-
-        if (permsRequestCode
-                == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION && grantResults.length > 0) {
-
-            boolean permissionAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-
-            if (permissionAccepted) {
-
-
-                if ( mGoogleApiClient.isConnected() == false) {
-
-                    Log.d(TAG, "onRequestPermissionsResult : mGoogleApiClient connect");
-                    mGoogleApiClient.connect();
-                }
-
-
-
-            } else {
-
-                checkPermissions();
-            }
-        }
-    }
-
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private void showDialogForPermission(String msg) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("알림");
-        builder.setMessage(msg);
-        builder.setCancelable(false);
-        builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                ActivityCompat.requestPermissions(mActivity,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            }
-        });
-
-        builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                finish();
-            }
-        });
-        builder.create().show();
-    }
-
-    private void showDialogForPermissionSetting(String msg) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("알림");
-        builder.setMessage(msg);
-        builder.setCancelable(true);
-        builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-
-                askPermissionOnceAgain = true;
-
-                Intent myAppSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:" + mActivity.getPackageName()));
-                myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
-                myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                mActivity.startActivity(myAppSettings);
-            }
-        });
-        builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                finish();
-            }
-        });
-        builder.create().show();
-    }
-
-
-    //여기부터는 GPS 활성화를 위한 메소드들
-    private void showDialogForLocationServiceSetting() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("위치 서비스 비활성화");
-        builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n"
-                + "위치 설정을 수정하실래요?");
-        builder.setCancelable(true);
-        builder.setPositiveButton("설정", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                Intent callGPSSettingIntent
-                        = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivityForResult(callGPSSettingIntent, GPS_ENABLE_REQUEST_CODE);
-            }
-        });
-        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-        builder.create().show();
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-
-            case GPS_ENABLE_REQUEST_CODE:
-
-                //사용자가 GPS 활성 시켰는지 검사
-                if (checkLocationServicesStatus()) {
-                    if (checkLocationServicesStatus()) {
-
-                        Log.d(TAG, "onActivityResult : 퍼미션 가지고 있음");
-
-
-                        if ( mGoogleApiClient.isConnected() == false ) {
-
-                            Log.d( TAG, "onActivityResult : mGoogleApiClient connect ");
-                            mGoogleApiClient.connect();
-                        }
-                        return;
-                    }
-                }
-
-                break;
-        }
-    }
-
-
-
-
     String getXmlData( String str){
 
         //EditText에 작성된 Text얻어오기
@@ -857,7 +536,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         String queryUrl="http://api.adams.ai/datamixiApi/omAnalysis?" +
                 "&key=" + key + "&query=" + str + "&type=" +1;
-
 
         try {
             URL url= new URL(queryUrl);//문자열로 된 요청 url을 URL 객체로 생성.
@@ -967,7 +645,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     // jsonObject = result.getJSONObject(0);
                     scoreJson = context.getDouble(0);
                     emotionJson = context.getString(1);
-
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -976,92 +653,207 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    //텍스트 파일로 쓰기//현재 쓰지 않음
+    /*
     void WriteFile(String curEmo, String text){
         try {
             Date currentTime = Calendar.getInstance().getTime();
             String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
             //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
-            FileOutputStream fos=openFileOutput(date_text+""+".txt", Context.MODE_APPEND);
+            String fileName =  date_text+""+".txt";
+            FileOutputStream fos=openFileOutput(fileName, Context.MODE_APPEND);
             long now = System.currentTimeMillis(); // 현재시간 받아오기
             Date date = new Date(now); // Date 객체 생성
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
             String nowTime = sdf.format(date);
+
             PrintWriter writer= new PrintWriter(fos);
             writer.append(nowTime + " ");
-            // writer.println(nowTime+ " ");
             writer.append(curEmo+ " ");
             writer.append(text);
             writer.append("\n");
             writer.close();
-        } catch (FileNotFoundException e) {
+
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        /*
-        /////////////////////// 파일 쓰기 ///////////////////////
-        String emotion = curEmo;
-        String str = text;
-        // 파일 생성
-        File saveFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/camdata"); // 저장 경로
-        // 폴더 생성
-        if(!saveFile.exists()){ // 폴더 없을 경우
-            saveFile.mkdir(); // 폴더 생성
-        }
-        try {
-            long now = System.currentTimeMillis(); // 현재시간 받아오기
-            Date date = new Date(now); // Date 객체 생성
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String nowTime = sdf.format(date);
 
-            BufferedWriter buf = new BufferedWriter(new FileWriter(saveFile+"/CarnumData.txt", true));
-            buf.append(nowTime + " "); // 날짜 쓰기
-            buf.append(emotion + " ");//감정 쓰기
-            buf.append(str); // 일기 쓰기
-            buf.newLine(); // 개행
-            buf.close();
-        } catch (
-                FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    }
 */
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    void WriteExcelFile() throws IOException {
+        //excel file
+        Date currentTime = Calendar.getInstance().getTime();
+        String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
+        //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
+        String name = "save_file_1";
+        String fileName = "save_file_1.xls";
+
+        long now = System.currentTimeMillis(); // 현재시간 받아오기
+        Date date = new Date(now); // Date 객체 생성
+       // SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        SimpleDateFormat nowDate = new SimpleDateFormat("yyyy-MM-dd  HH:mm");
+        String nowTime = nowDate.format(date); //시간 스트링
+
+///storage/self/primary/AndroidWorkSpace/save_file_1.xls
+      //  HSSFWorkbook writer = new HSSFWorkbook();
+        String filePath = "/storage/self/primary/AndroidWorkSpace" + "/"+fileName;
+        String fileChk = filePath;
+
+        java.io.File excelFile = new java.io.File(filePath);
+
+        File file = new File(fileChk);
+        if(file.exists()) { //파일 존재하면 불러오기
+            try {
+                FileInputStream inputStream = new FileInputStream(filePath);
+                workbook = new HSSFWorkbook(inputStream);
+                //내용 입력
+                sheet = (HSSFSheet) workbook.getSheetAt(0);
+                int rowsNum = sheet.getLastRowNum();
+
+                row = sheet.createRow(++rowsNum); //다음번 로우
+                //    Log.isLoggable("row", mLastRowNum);
+                c = row.createCell(0); //시간
+                c.setCellValue(nowTime);
+
+                c = row.createCell(1); //내용
+                c.setCellValue(str1);
+
+                c = row.createCell(2); //감정
+                c.setCellValue(emotionJson);
+
+                c = row.createCell(3); //위도
+                c.setCellValue(latitude);
+
+                c = row.createCell(4); //경도
+                c.setCellValue(longitude);
+
+                c = row.createCell(5); //태그
+                c.setCellValue(tags);
+
+
+                //  File excelFile = new File(fileName);
+                try {
+                    FileOutputStream os = new FileOutputStream(excelFile);
+                    workbook.write(os);
+                    workbook.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{ //파일 존재하지 않을 경우
+          //  FileInputStream inputStream = new FileInputStream(file);
+            workbook = new HSSFWorkbook();
+            sheet = (HSSFSheet) workbook.createSheet();
+            row = sheet.createRow(1);
+
+            c = row.createCell(0);
+            c.setCellValue("시간");
+
+            c = row.createCell(1);
+            c.setCellValue("감정");
+
+            c = row.createCell(2);
+            c.setCellValue("내용");
+
+            c = row.createCell(3);
+            c.setCellValue("위도");
+
+            c = row.createCell(4);
+            c.setCellValue("경도");
+
+            c = row.createCell(5);
+            c.setCellValue("태그");
+            //내용 입력
+          //  sheet = (HSSFSheet) workbook.getSheetAt(0);
+            int rowsNum = sheet.getLastRowNum();
+            row = sheet.createRow(++rowsNum); //다음번 로우
+            //    Log.isLoggable("row", mLastRowNum);
+            c = row.createCell(0); //시간
+            c.setCellValue(nowTime);
+
+            c = row.createCell(1); //내용
+            c.setCellValue(str1);
+
+            c = row.createCell(2); //감정
+            c.setCellValue(emotionJson);
+
+            c = row.createCell(3); //위도
+            c.setCellValue(latitude);
+
+            c = row.createCell(4); //경도
+            c.setCellValue(longitude);
+
+            c = row.createCell(5); //태그
+            c.setCellValue(tags);
+            //파일계속 null이라 막무가내로 파일 경로 만들기...
+
+            try {
+                FileOutputStream os = new FileOutputStream(excelFile);
+                workbook.write(os);
+                workbook.close();
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+
+        }
+
     }
 
 
-    /**
-     * 사용자의 위치를 수신
-     */
-    private Location getMyLocation() {
-        Location currentLocation = null;
-        // Register the listener with the Location Manager to receive location updates
-        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("////////////사용자에게 권한을 요청해야함");
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, this.REQUEST_CODE_LOCATION);
-            getMyLocation(); //이건 써도되고 안써도 되지만, 전 권한 승인하면 즉시 위치값 받아오려고 썼습니다!
-        }
-        else {
-            System.out.println("////////////권한요청 안해도됨");
 
-            // 수동으로 위치 구하기
-            String locationProvider = LocationManager.GPS_PROVIDER;
-            currentLocation = locationManager.getLastKnownLocation(locationProvider);
-            if (currentLocation != null) {
-                double lng = currentLocation.getLongitude();
-                double lat = currentLocation.getLatitude();
+    //혜빈수정 //2020-05-05 주현 FragmentPagerAdapter를 FragmentStatePagerAdapter로 수정(화면갱신때문에)
+   MyPagerAdapter adapterViewPager;
+    public static class MyPagerAdapter extends FragmentStatePagerAdapter {
+        private static int NUM_ITEMS = 3;
+
+        public MyPagerAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
+        }
+
+        // Returns total number of pages
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+
+        // Returns the fragment to display for that page
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return com.gp.dailyrecord.FirstFragment.newInstance(0, "Page # 1");//맵뷰
+                case 1:
+                    return com.gp.dailyrecord.SecondFragment.newInstance(1, "Page # 2"); //홈
+                case 2:
+                    return com.gp.dailyrecord.ThirdFragment.newInstance(2, "Page # 3");//다이어리
+                default:
+                    return null;
             }
         }
-        return currentLocation;
 
-        // 출처: https://vvh-avv.tistory.com/138 [정리잘하고싶다]
+        // Returns the page title for the top indicator
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return "Page " + position;
+        }
+
     }
 
-
+    public void refresh(){
+        adapterViewPager.notifyDataSetChanged();
+    }
 
 
 }
+
 
 
 
