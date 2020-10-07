@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-   >
+    android:background="@drawable/daily_back">
 
     <!--
     datePicker - 날짜를 선택하는 달력
@@ -34,8 +34,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:gravity="center"
-            android:text=""
-            android:textStyle="bold" />
+           />
 
         <ListView
             android:id="@+id/listview1"

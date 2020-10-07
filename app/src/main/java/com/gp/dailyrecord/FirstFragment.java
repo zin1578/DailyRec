@@ -5,11 +5,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +27,8 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -48,6 +52,8 @@ public class FirstFragment extends Fragment {
     MapView mapView;
     Button btnDatePick;
     DatePickerDialog picker;
+    MenuItem searchItem;
+    MenuItem mSearch;
     // newInstance constructor for creating fragment with arguments
     public static FirstFragment newInstance(int page, String title) {
         FirstFragment fragment = new FirstFragment();
@@ -67,6 +73,47 @@ public class FirstFragment extends Fragment {
         page = getArguments().getInt("someInt", 0);
         title = getArguments().getString("someTitle");
 
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        //  super.onCreateOptionsMenu(menu, inflater);
+        //inflater.inflate(R.menu.menu, menu);
+        searchItem = menu.findItem(R.id.menu_search);
+        mSearch = menu.findItem(R.id.menu_search);
+
+
+        mSearch.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return false;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                return false;
+            }
+        });
+        SearchView sv = (SearchView)mSearch.getActionView();
+
+        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String filterText = query;
+                if (filterText.length() > 0) {
+                    tagSearch(filterText);
+                } else {
+
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -247,8 +294,8 @@ public class FirstFragment extends Fragment {
         Date currentTime = Calendar.getInstance().getTime();
         String date_text = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentTime);
         //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
-        String fileName =  "save_file"+".xls";
-        String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
+        String fileName =  "save_file_1"+".xls";
+        String filePath = "/storage/self/primary/AndroidWorkSpace" + "/"+fileName;
         java.io.File excelFile = new java.io.File(filePath);
         MapPoint MARKER_POINT = MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304);
         MapPOIItem marker = new MapPOIItem();
@@ -330,8 +377,8 @@ public class FirstFragment extends Fragment {
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
         //excel file
         mapView.removeAllPOIItems();
-        String fileName =  "save_file.xls";
-        String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
+        String fileName =  "save_file_1.xls";
+        String filePath = "/storage/self/primary/AndroidWorkSpace" + "/"+fileName;
         java.io.File excelFile = new java.io.File(filePath);
         MapPoint MARKER_POINT = MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304);
         MapPOIItem marker = new MapPOIItem();
@@ -362,7 +409,9 @@ public class FirstFragment extends Fragment {
                             myRow = (HSSFRow) rowIter.next(); // 한줄 데이터
                             Iterator cellIter = myRow.cellIterator();
                             Log.isLoggable("row", myRow.getRowNum());
-                            if(myRow.getCell(0).toString().contains(dateBF)) {
+                            Cell c;
+                            c = myRow.getCell(0);
+                                if(myRow.getCell(0).toString().contains(dateBF)) {
                                 while (cellIter.hasNext()) {
                                     counter++;
                                     HSSFCell myCell = (HSSFCell) cellIter.next();
@@ -392,11 +441,19 @@ public class FirstFragment extends Fragment {
                                             marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                         }
                                     } else if (counter == 4) {//lat
-                                        lat = myCell.getNumericCellValue();
+                                        if(myCell.getCellType()==CellType.STRING){
+                                            lat =Double.valueOf(myCell.toString());
+                                        }else {
+                                            lat = myCell.getNumericCellValue();
+                                        }
                                         // MARKER_POINT = MapPoint.mapPointWithGeoCoord(myCell, );
                                         Log.e("Cell", myCell.toString());
                                     } else if (counter == 5) {//lon
-                                        lon = myCell.getNumericCellValue();
+                                        if(myCell.getCellType()==CellType.STRING){
+                                            lon =Double.valueOf(myCell.toString());
+                                        }else {
+                                            lon = myCell.getNumericCellValue();
+                                        }
                                         MARKER_POINT = MapPoint.mapPointWithGeoCoord(lat, lon);
                                         Log.e("Cell", myCell.toString());
                                         marker.setMapPoint(MARKER_POINT);
@@ -427,8 +484,8 @@ public class FirstFragment extends Fragment {
     private void tagSearch(String tag) {
         //excel file
         mapView.removeAllPOIItems();
-        String fileName =  "save_file.xls";
-        String filePath = getActivity().getFilesDir().getPath().toString() + "/"+fileName;
+        String fileName =  "save_file_1.xls";
+        String filePath = "/storage/self/primary/AndroidWorkSpace" + "/"+fileName;
         java.io.File excelFile = new java.io.File(filePath);
         MapPoint MARKER_POINT = MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304);
         MapPOIItem marker = new MapPOIItem();
@@ -477,11 +534,19 @@ public class FirstFragment extends Fragment {
                                         marker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                                     }
                                 } else if (counter == 4) {//lat
-                                    lat = myCell.getNumericCellValue();
+                                    if(myCell.getCellType()==CellType.STRING){
+                                        lat = Double.valueOf(myCell.toString());
+                                    }else {
+                                        lat = myCell.getNumericCellValue();
+                                    }
                                     // MARKER_POINT = MapPoint.mapPointWithGeoCoord(myCell, );
                                     Log.e("Cell", myCell.toString());
                                 } else if (counter == 5) {//lon
-                                    lon = myCell.getNumericCellValue();
+                                    if(myCell.getCellType()==CellType.STRING){
+                                        lon = Double.valueOf(myCell.toString());
+                                    }else {
+                                        lon = myCell.getNumericCellValue();
+                                    }
                                     MARKER_POINT = MapPoint.mapPointWithGeoCoord(lat, lon);
                                     Log.e("Cell", myCell.toString());
                                     marker.setMapPoint(MARKER_POINT);

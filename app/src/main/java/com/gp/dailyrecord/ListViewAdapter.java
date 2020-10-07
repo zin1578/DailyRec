@@ -15,9 +15,9 @@ import java.util.ArrayList;
 
 public class ListViewAdapter extends BaseAdapter implements Filterable {
     // Adapter에 추가된 데이터를 저장하기 위한 ArrayList
-    private ArrayList<ListViewItem> listViewItemList = new ArrayList<ListViewItem>() ;
+    public ArrayList<ListViewItem> listViewItemList = new ArrayList<ListViewItem>() ;
     // 필터링된 결과 데이터를 저장하기 위한 ArrayList. 최초에는 전체 리스트 보유.
-    private ArrayList<ListViewItem> filteredItemList = listViewItemList;
+    public ArrayList<ListViewItem> filteredItemList = listViewItemList;
 
     Filter listFilter ;
     // ListViewAdapter의 생성자
@@ -77,15 +77,17 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         return filteredItemList.get(position) ;
     }
 
+
+
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(Drawable icon, String title, String desc, String date) {
+    public void addItem(Drawable icon, String title, String desc, String date, String emo) {
         ListViewItem item = new ListViewItem();
 
         item.setIcon(icon);
         item.setTitle(title);
         item.setDesc(desc);
         item.setDate(date);
-
+        item.setEmotion(emo);
         listViewItemList.add(item);
     }
 
@@ -99,7 +101,17 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         return listFilter ;
     }
 
+    public String getTitle (int position) {
+      return  listViewItemList.get(position).getTitle();
+    }
 
+    public String getDate (int position){
+        return listViewItemList.get(position).getDate();
+    }
+
+    public String getEmo (int position){
+        return listViewItemList.get(position).getEmotion();
+    }
     private class ListFilter extends Filter {
 
         @Override

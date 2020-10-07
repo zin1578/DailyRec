@@ -7,6 +7,7 @@ public class ListViewItem {
     private String titleStr ;
     private String descStr ;
     private String dateStr;
+    private String emoStr;
 
     public void setIcon(Drawable icon) {
         iconDrawable = icon ;
@@ -17,10 +18,12 @@ public class ListViewItem {
     public void setDesc(String desc) {
         descStr = desc ;
     }
+    public void setEmotion(String emo){emoStr = emo;}
     public void setDate(String date){
         dateStr = date;
     }
 
+    public String getEmotion(){return this.emoStr;}
     public Drawable getIcon() {
         return this.iconDrawable ;
     }
@@ -30,7 +33,5 @@ public class ListViewItem {
     public String getDesc() {
         return this.descStr ;
     }
-    public String getDate(){
-        return this.dateStr;
-    }
+    public String getDate(){ return this.dateStr; }
 }

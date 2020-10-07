@@ -160,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ViewPager vpPager = (ViewPager) findViewById(R.id.vpPager);
         adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         vpPager.setAdapter(adapterViewPager);
@@ -181,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
             mRecognizer.setRecognitionListener(listener);
             mRecognizer.startListening(intent);
+
         });
     }
 
@@ -448,14 +448,11 @@ public class MainActivity extends AppCompatActivity {
                     int bad_count = 0;
                     int complex_count = 0;
                     StringBuilder sb = new StringBuilder();
-                     String[] good_tag = new String[]{"서비스가 좋", "위생이 좋","청결", "맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
+                     String[] good_tag = new String[]{"행복", "서비스가 좋", "위생이 좋","청결", "맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
                      String[] bad_tag = new String[]{"별로","서비스가 별로", "맛없", "더럽","불친절", "짜증", "화가나는", "화가 나", "짜증", "화가 났","화 나", "화났", "빡쳐", "빡침", "답답", "환멸"};
                      String[] complex_tag = new String[]{"은데", "지만"};
-                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점", "집"};
+                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점", "집", "스타벅스", "투썸", "공차", "길거리", "포차"};
 
-                     if(str1.contains("맛집")||(str1.contains("맛있")||str1.contains("존맛"))&&(str1.contains("카페")||str1.contains("여기")||str1.contains("이 집"))) {
-                     sb.append("#맛집 ");
-                     }
 
                      for (int i = 0; i <good_tag.length; i++) {
                          if (str1.contains(good_tag[i])) { //긍정 키워드 수 세기
@@ -482,7 +479,32 @@ public class MainActivity extends AppCompatActivity {
                          emotionJson = "좋음";   //긍정 키워드 걸리면 좋음으로 감정 바꿈
                      }else if(good_count==0&&(bad_count>0)){ //위와 반대
                          sb.append("#불만족 ");
+                         emotionJson = "나쁨";
+                     }else if(complex_count>0){
+                         sb.append("#혼합 ");
+                         emotionJson = "보통";
                      }
+
+                     if(str1.contains("맛집")||(str1.contains("맛있")||str1.contains("존맛"))&&(str1.contains("카페")||str1.contains("여기")||str1.contains("이 집"))) {
+                         sb.append("#맛집 ");
+                     }
+                     if(str1.contains("분위기")&&(str1.contains("좋")||str1.contains("있는")||str1.contains("괜찮"))){
+                         sb.append("#분위기 좋은 ");
+                     }
+                     if((str1.contains("행복"))&&!(emotionJson=="나쁨")){
+                         sb.append("#행복한 ");
+                         emotionJson = "좋음";
+                     }
+                     if(str1.contains("우울")&&emotionJson=="나쁨"){
+                         sb.append("#우울한 ");
+                     }
+                     if(str1.contains("데이트")){
+                         sb.append("#데이트 ");
+                     }
+                     if(str1.contains("너무")&&(str1.contains("맛있")||str1.contains("좋"))&&!(emotionJson=="나쁨")){
+                         emotionJson = "좋음";
+                     }
+
                      tags = sb.toString();
                  }
 
@@ -666,8 +688,8 @@ public class MainActivity extends AppCompatActivity {
         Date currentTime = Calendar.getInstance().getTime();
         String date_text = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
         //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
-        String name = "save_file";
-        String fileName =  name+".xls";
+        String name = "save_file_1";
+        String fileName = "save_file_1.xls";
 
         long now = System.currentTimeMillis(); // 현재시간 받아오기
         Date date = new Date(now); // Date 객체 생성
@@ -675,18 +697,13 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat nowDate = new SimpleDateFormat("yyyy-MM-dd  HH:mm");
         String nowTime = nowDate.format(date); //시간 스트링
 
-
+///storage/self/primary/AndroidWorkSpace/save_file_1.xls
       //  HSSFWorkbook writer = new HSSFWorkbook();
-        String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/"+fileName;
+        String filePath = "/storage/self/primary/AndroidWorkSpace" + "/"+fileName;
         String fileChk = filePath;
 
         java.io.File excelFile = new java.io.File(filePath);
-      /*  if(excelFile.delete()){
-            Log.i("File Delete Success", excelFile.getName());
-        }else{
-            Log.i("File Delete Failed", excelFile.getName());
-        }
-*/
+
         File file = new File(fileChk);
         if(file.exists()) { //파일 존재하면 불러오기
             try {
@@ -716,7 +733,6 @@ public class MainActivity extends AppCompatActivity {
                 c = row.createCell(5); //태그
                 c.setCellValue(tags);
 
-                //파일계속 null이라 막무가내로 파일 경로 만들기...
 
                 //  File excelFile = new File(fileName);
                 try {
@@ -777,7 +793,6 @@ public class MainActivity extends AppCompatActivity {
             c.setCellValue(tags);
             //파일계속 null이라 막무가내로 파일 경로 만들기...
 
-            //  File excelFile = new File(fileName);
             try {
                 FileOutputStream os = new FileOutputStream(excelFile);
                 workbook.write(os);
@@ -832,7 +847,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    protected void refresh(){
+    public void refresh(){
         adapterViewPager.notifyDataSetChanged();
     }
 
