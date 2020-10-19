@@ -214,6 +214,42 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        switch (requestCode) {
+
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
+
+                //권한 획득이 거부되면 결과 배열은 비어있게 됨
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //권한 획득이 허용되면 수행해야 할 작업이 표시됨
+                    //일반적으로 작업을 처리할 메서드를 호출
+                } else {
+                    //권한 획득이 거부되면 수행해야 할 적업이 표시됨
+                    //일반적으로 작업을 처리할 메서드를 호출
+                }
+
+                return;
+
+            }
+
+        }
+
+        //출처: https://appsnuri.tistory.com/431 [이야기앱 세상]
+    }
+
+
 
 
     private final LocationListener mLocationListener = new LocationListener() {
@@ -371,8 +407,36 @@ public class MainActivity extends AppCompatActivity {
                 twice = false;
                 return;
             }
-                //위치
+                //위치 //권한
+// 권한을 획득하기전에 현재 Acivity에서 지정된 권한을 사용할 수 있는지 여부 체크
 
+            if (ContextCompat.checkSelfPermission(MainActivity.this,
+
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // 권한 획득에 대한 설명 보여주기
+
+                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    // 사용자에게 권한 획득에 대한 설명을 보여준 후 권한 요청을 수행
+                } else {
+
+                    // 권한 획득의 필요성을 설명할 필요가 없을 때는 아래 코드를
+
+                    //수행해서 권한 획득 여부를 요청한다.
+
+                    ActivityCompat.requestPermissions(MainActivity.this,
+
+                            PERMISSIONS_STORAGE,
+
+                            MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+                }
+
+            }
             if (Build.VERSION.SDK_INT >= 23 &&
                     ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -756,10 +820,10 @@ public class MainActivity extends AppCompatActivity {
             c.setCellValue("시간");
 
             c = row.createCell(1);
-            c.setCellValue("감정");
+            c.setCellValue("내용");
 
             c = row.createCell(2);
-            c.setCellValue("내용");
+            c.setCellValue("감정");
 
             c = row.createCell(3);
             c.setCellValue("위도");
@@ -791,6 +855,7 @@ public class MainActivity extends AppCompatActivity {
 
             c = row.createCell(5); //태그
             c.setCellValue(tags);
+
             //파일계속 null이라 막무가내로 파일 경로 만들기...
 
             try {

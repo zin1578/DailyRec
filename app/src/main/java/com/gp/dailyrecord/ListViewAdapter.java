@@ -31,7 +31,7 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
     // Adapter에 사용되는 데이터의 개수를 리턴. : 필수 구현
     @Override
     public int getCount() {
-        return filteredItemList.size() ;
+        return filteredItemList.size();
     }
 
     // position에 위치한 데이터를 화면에 출력하는데 사용될 View를 리턴. : 필수 구현

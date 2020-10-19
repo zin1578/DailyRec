@@ -294,7 +294,7 @@ public class FirstFragment extends Fragment {
         Date currentTime = Calendar.getInstance().getTime();
         String date_text = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentTime);
         //FileOutputStream 객체생성, 파일명 "data.txt", 새로운 텍스트 추가하기 모드
-        String fileName =  "save_file_1"+".xls";
+        String fileName =  "save_file_1.xls";
         String filePath = "/storage/self/primary/AndroidWorkSpace" + "/"+fileName;
         java.io.File excelFile = new java.io.File(filePath);
         MapPoint MARKER_POINT = MapPoint.mapPointWithGeoCoord(37.54892296550104, 126.99089033876304);
@@ -385,14 +385,15 @@ public class FirstFragment extends Fragment {
 
         String dateBF = "";
 
-        if(dayOfMonth<10 && monthOfYear<10)
+        if(dayOfMonth<10 && monthOfYear<9)
             dateBF= year +"-"+ "0" + (monthOfYear+1) +"-"+ "0" + dayOfMonth;
-        else if(dayOfMonth>=10&&monthOfYear<10)
+        else if(dayOfMonth>=10&&monthOfYear<9)
             dateBF = year +"-"+ "0" + (monthOfYear+1) + "-" + dayOfMonth;
-        else if(dayOfMonth<10&&monthOfYear>=10)
+        else if(dayOfMonth<10&&monthOfYear>=9)
             dateBF = year + "-"+ (monthOfYear+1) +"-"+ "0" + dayOfMonth;
-        else if(dayOfMonth>=10&&monthOfYear>=10)
-            dateBF = year + "-"+ (monthOfYear+1) + "-" + dayOfMonth;
+        else if(dayOfMonth>=10&&monthOfYear>=9) {
+            dateBF = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
+        }
 
             if(excelFile.exists()) {
                 try {

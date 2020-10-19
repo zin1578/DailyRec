@@ -86,8 +86,6 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     public void onCreate(Bundle savedInstanceState) {
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
-
-
     }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -679,12 +677,15 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
                         if(emo.equals("좋음")) {
                             adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_satisfied_48px),
                                     str, tag, time, emo);
+                            adapter.notifyDataSetChanged();
                         }else if (emo.equals("보통")){
                             adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_satisfied_48px),
                                     str, tag, time, emo);
+                            adapter.notifyDataSetChanged();
                         }else if(emo.equals("나쁨")){
                             adapter.addItem(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_sentiment_very_dissatisfied_48px),
                                     str, tag, time, emo);
+                            adapter.notifyDataSetChanged();
                         }
                         counter = 0;
                     }
@@ -717,7 +718,6 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
     // 일기 파일 읽기
     private void checkedDay(int year, int monthOfYear, int dayOfMonth) {
     //    adapter.clear();
-
         StringBuilder sb = new StringBuilder(); //string buffer
         String time ="";
         String str ="";
@@ -727,15 +727,14 @@ public class ThirdFragment extends Fragment implements  DatePickerDialog.OnDateS
         String dateBF = "";
         // 받은 날짜로 날짜 보여주는
         viewDatePick.setText(year + " - " + (monthOfYear+1)+ " - " + dayOfMonth);
-        // 파일 이름을 만들어준다. 파일 이름은 "20170318.txt" 이런식으로 나옴
 
-        if(dayOfMonth<10 && monthOfYear<10)
+        if(dayOfMonth<10 && monthOfYear<9)
             dateBF= year +"-"+ "0" + (monthOfYear+1) +"-"+ "0" + dayOfMonth;
-        else if(dayOfMonth>=10&&monthOfYear<10)
+        else if(dayOfMonth>=10&&monthOfYear<9)
             dateBF = year +"-"+ "0" + (monthOfYear+1) + "-" + dayOfMonth;
-        else if(dayOfMonth<10&&monthOfYear>=10)
+        else if(dayOfMonth<10&&monthOfYear>=9)
             dateBF = year + "-"+ (monthOfYear+1) +"-"+ "0" + dayOfMonth;
-        else if(dayOfMonth>=10&&monthOfYear>=10)
+        else if(dayOfMonth>=10&&monthOfYear>=9)
             dateBF = year + "-"+ (monthOfYear+1) + "-" + dayOfMonth;
 
         ((ListViewAdapter)listview.getAdapter()).getFilter().filter(dateBF);
