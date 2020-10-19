@@ -515,7 +515,7 @@ public class MainActivity extends AppCompatActivity {
                      String[] good_tag = new String[]{"행복", "서비스가 좋", "위생이 좋","청결", "맛집", "분위기 좋", "좋은", "맛있", "만족", "추천", "강추"};
                      String[] bad_tag = new String[]{"별로","서비스가 별로", "맛없", "더럽","불친절", "짜증", "화가나는", "화가 나", "짜증", "화가 났","화 나", "화났", "빡쳐", "빡침", "답답", "환멸"};
                      String[] complex_tag = new String[]{"은데", "지만"};
-                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점", "집", "스타벅스", "투썸", "공차", "길거리", "포차"};
+                     String[] place_tag = new String[]{"카페", "학교", "식당", "음식점", "스타벅스", "투썸", "공차", "길거리", "포차"};
 
 
                      for (int i = 0; i <good_tag.length; i++) {
@@ -758,7 +758,7 @@ public class MainActivity extends AppCompatActivity {
         long now = System.currentTimeMillis(); // 현재시간 받아오기
         Date date = new Date(now); // Date 객체 생성
        // SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        SimpleDateFormat nowDate = new SimpleDateFormat("yyyy-MM-dd  HH:mm");
+        SimpleDateFormat nowDate = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
         String nowTime = nowDate.format(date); //시간 스트링
 
 ///storage/self/primary/AndroidWorkSpace/save_file_1.xls
